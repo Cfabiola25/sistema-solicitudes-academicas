@@ -1,0 +1,25 @@
+# NetBeans
+/nbproject/private/
+/build/
+/dist/
+
+# Java
+*.class
+*.jar
+*.war
+*.ear
+
+# Tomcat / uploads
+/uploads/
+/web/uploads/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
