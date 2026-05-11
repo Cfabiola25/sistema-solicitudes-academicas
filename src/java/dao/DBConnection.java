@@ -1,36 +1,43 @@
 package dao;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Properties;
 
 /**
- * Utility class for obtaining database connections. The
- * configuration parameters (URL, user and password) are
- * declared as constants for simplicity. Adjust these values
- * according to your local MySQL installation. The project
- * assumes the MySQL JDBC driver is available on the
- * classpath (e.g. mysql-connector-j). In NetBeans you can
- * add the driver as a library to the project.
+ * Utility class for obtaining database connections.
+ * Configuration is loaded from database.properties file.
  */
 public class DBConnection {
-    private static final String URL = "jdbc:mysql://localhost:3306/fesc_solicitudes?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Bogota";
-    private static final String USER = "root";
-    private static final String PASSWORD = "Nelis2508"; 
+    private static String URL;
+    private static String USER;
+    private static String PASSWORD;
 
     static {
-        try {
+        Properties props = new Properties();
+        try (InputStream input = DBConnection.class.getClassLoader().getResourceAsStream("database.properties")) {
+            if (input == null) {
+                throw new RuntimeException("Sorry, unable to find database.properties");
+            }
+            props.load(input);
+            
+            URL = props.getProperty("db.url");
+            USER = props.getProperty("db.user");
+            PASSWORD = props.getProperty("db.password");
+            
             Class.forName("com.mysql.cj.jdbc.Driver");
         } catch (ClassNotFoundException e) {
-            throw new RuntimeException("MySQL JDBC Driver not found. Please add it to your project.", e);
+            throw new RuntimeException("MySQL JDBC Driver not found.", e);
+        } catch (IOException e) {
+            throw new RuntimeException("Error loading database.properties", e);
         }
     }
 
     /**
-     * Returns a new database connection. It is the caller's
-     * responsibility to close the connection when it is no
-     * longer needed.
-     *
+     * Returns a new database connection.
      * @return a new Connection
      * @throws SQLException if a connection cannot be established
      */

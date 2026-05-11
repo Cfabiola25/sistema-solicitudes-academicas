@@ -1,0 +1,5 @@
+# Ejemplo de configuración de base de datos
+# Copia este archivo como 'database.properties' y ajusta tus credenciales
+db.url=jdbc:mysql://localhost:3306/fesc_solicitudes?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Bogota
+db.user=root
+db.password=TU_CONTRASEÑA

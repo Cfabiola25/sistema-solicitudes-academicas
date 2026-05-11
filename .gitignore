@@ -23,3 +23,7 @@ Thumbs.db
 # IDE
 .idea/
 .vscode/
+.github/prompts/*
+
+# Config
+src/java/database.properties
