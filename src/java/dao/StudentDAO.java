@@ -28,23 +28,25 @@ public class StudentDAO {
      * are valid, otherwise returns null.
      */
     public Student login(String email, String password) {
-        String sql = "SELECT * FROM estudiante WHERE email = ? AND password = ?";
+        String sql = "SELECT * FROM estudiante WHERE email = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, email);
-            ps.setString(2, password);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    Student s = new Student();
-                    s.setId(rs.getInt("id"));
-                    s.setNombre(rs.getString("nombre"));
-                    s.setApellido(rs.getString("apellido"));
-                    s.setEmail(rs.getString("email"));
-                    s.setPassword(rs.getString("password"));
-                    s.setProgramaId((Integer)rs.getObject("programa_id"));
-                    s.setSedeId((Integer)rs.getObject("sede_id"));
-                    s.setJornadaId((Integer)rs.getObject("jornada_id"));
-                    return s;
+                    String storedPassword = rs.getString("password");
+                    if (util.PasswordHasher.verifyPassword(password, storedPassword)) {
+                        Student s = new Student();
+                        s.setId(rs.getInt("id"));
+                        s.setNombre(rs.getString("nombre"));
+                        s.setApellido(rs.getString("apellido"));
+                        s.setEmail(rs.getString("email"));
+                        s.setPassword(storedPassword);
+                        s.setProgramaId((Integer)rs.getObject("programa_id"));
+                        s.setSedeId((Integer)rs.getObject("sede_id"));
+                        s.setJornadaId((Integer)rs.getObject("jornada_id"));
+                        return s;
+                    }
                 }
             }
         } catch (SQLException e) {

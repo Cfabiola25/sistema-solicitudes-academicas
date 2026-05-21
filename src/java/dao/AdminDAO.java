@@ -29,19 +29,22 @@ public class AdminDAO {
      * the Admin object if credentials match; otherwise null.
      */
     public Admin login(String email, String password) {
-        String sql = "SELECT * FROM administrador WHERE email = ? AND password = ?";
+        String sql = "SELECT * FROM administrador WHERE email = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, email);
-            ps.setString(2, password);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    Admin admin = new Admin();
-                    admin.setId(rs.getInt("id"));
-                    admin.setNombre(rs.getString("nombre"));
-                    admin.setEmail(rs.getString("email"));
-                    admin.setPassword(rs.getString("password"));
-                    return admin;
+                    String storedPassword = rs.getString("password");
+                    if (util.PasswordHasher.verifyPassword(password, storedPassword)) {
+                        Admin admin = new Admin();
+                        admin.setId(rs.getInt("id"));
+                        admin.setNombre(rs.getString("nombre"));
+                        admin.setEmail(rs.getString("email"));
+                        admin.setPassword(storedPassword);
+                        admin.setRol(rs.getString("rol"));
+                        return admin;
+                    }
                 }
             }
         } catch (SQLException e) {
@@ -209,5 +212,41 @@ public class AdminDAO {
             e.printStackTrace();
         }
         return false;
+    }
+
+    /**
+     * Retrieves all students with their academic program, campus,
+     * and shift names from the database.
+     */
+    public List<Student> getAllStudents() {
+        List<Student> list = new ArrayList<>();
+        String sql = "SELECT e.*, p.nombre AS prog_nombre, s.nombre AS sede_nombre, j.nombre AS jor_nombre " +
+                     "FROM estudiante e " +
+                     "LEFT JOIN programa_academico p ON e.programa_id = p.id " +
+                     "LEFT JOIN sede s ON e.sede_id = s.id " +
+                     "LEFT JOIN jornada j ON e.jornada_id = j.id " +
+                     "ORDER BY e.apellido, e.nombre";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Student st = new Student();
+                st.setId(rs.getInt("id"));
+                st.setNombre(rs.getString("nombre"));
+                st.setApellido(rs.getString("apellido"));
+                st.setEmail(rs.getString("email"));
+                st.setPassword(rs.getString("password"));
+                st.setProgramaId((Integer) rs.getObject("programa_id"));
+                st.setSedeId((Integer) rs.getObject("sede_id"));
+                st.setJornadaId((Integer) rs.getObject("jornada_id"));
+                st.setProgramaNombre(rs.getString("prog_nombre"));
+                st.setSedeNombre(rs.getString("sede_nombre"));
+                st.setJornadaNombre(rs.getString("jor_nombre"));
+                list.add(st);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 }

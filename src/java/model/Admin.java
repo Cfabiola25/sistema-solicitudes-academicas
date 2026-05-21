@@ -13,6 +13,8 @@ public class Admin {
     private String email;
     private String password;
 
+    private String rol;
+
     public Admin() {}
 
     public Admin(int id, String nombre, String email, String password) {
@@ -20,6 +22,14 @@ public class Admin {
         this.nombre = nombre;
         this.email = email;
         this.password = password;
+    }
+
+    public Admin(int id, String nombre, String email, String password, String rol) {
+        this.id = id;
+        this.nombre = nombre;
+        this.email = email;
+        this.password = password;
+        this.rol = rol;
     }
 
     public int getId() {
@@ -52,5 +62,13 @@ public class Admin {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getRol() {
+        return rol;
+    }
+
+    public void setRol(String rol) {
+        this.rol = rol;
     }
 }
