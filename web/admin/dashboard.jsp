@@ -105,17 +105,13 @@
                class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-500 transition-all">
                 <i class="fa-regular fa-folder-open text-sm w-4 text-center text-gray-400"></i> Solicitudes
             </a>
-            <a href="#"
+            <a href="<%=request.getContextPath()%>/admin/students"
                class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-500 transition-all">
                 <i class="fa-solid fa-user text-sm w-4 text-center text-gray-400"></i> Estudiantes
             </a>
-            <a href="#"
+            <a href="<%=request.getContextPath()%>/admin/reports"
                class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-500 transition-all">
                 <i class="fa-regular fa-chart-bar text-sm w-4 text-center text-gray-400"></i> Reportes
-            </a>
-            <a href="#"
-               class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-500 transition-all">
-                <i class="fa-solid fa-gear text-sm w-4 text-center text-gray-400"></i> Configuración
             </a>
         </nav>
     </div>

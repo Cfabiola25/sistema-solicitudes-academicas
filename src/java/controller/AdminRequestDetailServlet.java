@@ -1,6 +1,7 @@
 package controller;
 
 import dao.AdminDAO;
+import dao.SolicitudMensajeDAO;
 import model.Admin;
 import model.Solicitud;
 
@@ -20,6 +21,7 @@ import java.io.IOException;
 @WebServlet(name = "AdminRequestDetailServlet", urlPatterns = {"/admin/request-detail"})
 public class AdminRequestDetailServlet extends HttpServlet {
     private AdminDAO adminDAO = new AdminDAO();
+    private SolicitudMensajeDAO mensajeDAO = new SolicitudMensajeDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -46,6 +48,7 @@ public class AdminRequestDetailServlet extends HttpServlet {
             return;
         }
         request.setAttribute("solicitud", solicitud);
+        request.setAttribute("mensajes", mensajeDAO.getBySolicitudId(solicitud.getId()));
         request.getRequestDispatcher("/admin/request_detail.jsp").forward(request, response);
     }
 
@@ -57,10 +60,15 @@ public class AdminRequestDetailServlet extends HttpServlet {
             return;
         }
         int id = Integer.parseInt(request.getParameter("id"));
+        String action = request.getParameter("action");
         String newState = request.getParameter("newState");
         String comentario = request.getParameter("comentario");
         Admin admin = (Admin) session.getAttribute("user");
-        if (newState != null && (newState.equals("Aprobada") || newState.equals("Rechazada"))) {
+        if ("message".equals(action)) {
+            if (comentario != null && !comentario.trim().isEmpty()) {
+                mensajeDAO.addMessage(id, "admin", admin.getNombre(), comentario.trim());
+            }
+        } else if (newState != null && (newState.equals("Aprobada") || newState.equals("Rechazada"))) {
             adminDAO.updateStatus(id, newState, comentario, admin.getId());
         }
         response.sendRedirect(request.getContextPath() + "/admin/request-detail?id=" + id);

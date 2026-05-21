@@ -1,5 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ page import="model.Solicitud" %>
+<%@ page import="java.util.List, model.Solicitud, model.SolicitudMensaje" %>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -59,17 +59,13 @@
                class="nav-link active flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-500 transition-all">
                 <i class="fa-regular fa-folder-open text-sm w-4 text-center text-gray-400"></i> Solicitudes
             </a>
-            <a href="#"
+            <a href="<%=request.getContextPath()%>/admin/students"
                class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-500 transition-all">
                 <i class="fa-solid fa-user text-sm w-4 text-center text-gray-400"></i> Estudiantes
             </a>
-            <a href="#"
+            <a href="<%=request.getContextPath()%>/admin/reports"
                class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-500 transition-all">
                 <i class="fa-regular fa-chart-bar text-sm w-4 text-center text-gray-400"></i> Reportes
-            </a>
-            <a href="#"
-               class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-500 transition-all">
-                <i class="fa-solid fa-gear text-sm w-4 text-center text-gray-400"></i> Configuración
             </a>
         </nav>
     </div>
@@ -186,48 +182,81 @@
                     </div>
                 </div>
 
-                <% if (sol.getFechaRespuesta() != null) { %>
-                <!-- Previous Response Card -->
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 relative overflow-hidden">
-                    <div class="absolute top-0 left-0 w-1 h-full bg-gray-300"></div>
-                    <h3 class="font-bold text-gray-800 mb-4 border-b border-gray-50 pb-3"><i class="fa-solid fa-reply text-gray-400 mr-2"></i> Respuesta Previa del Administrador</h3>
-                    
-                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">Fecha de Respuesta: <span class="text-gray-700 normal-case"><%= sol.getFechaRespuesta().toLocalDate().toString() %></span></p>
-                    <div class="bg-gray-50 rounded-xl p-4 text-sm text-gray-700 italic border border-gray-100 mt-2">
-                        "<%= sol.getComentarioRespuesta() %>"
-                    </div>
-                </div>
-                <% } %>
+
             </div>
 
             <!-- Action section -->
             <div class="flex flex-col gap-6">
-                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 sticky top-24">
-                    <h3 class="font-bold text-gray-800 mb-4"><i class="fa-solid fa-gavel text-[#c8102e] mr-2"></i> Resolución de Solicitud</h3>
+                <!-- Chat Messages -->
+                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                    <h3 class="font-bold text-gray-800 mb-4"><i class="fa-solid fa-comments text-[#c8102e] mr-2"></i> Conversación con el estudiante</h3>
                     
-                    <form action="<%=request.getContextPath()%>/admin/request-detail" method="post" class="flex flex-col gap-5">
+                    <div class="bg-gray-50 rounded-xl p-4 space-y-3 mb-4 max-h-80 overflow-y-auto">
+                        <% List<model.SolicitudMensaje> mensajes = (List<model.SolicitudMensaje>) request.getAttribute("mensajes");
+                           if (mensajes == null || mensajes.isEmpty()) { %>
+                            <p class="text-center text-sm text-gray-400 py-8">Sin mensajes aún. Inicia la conversación.</p>
+                        <% } %>
+                        <% if (mensajes != null) { %>
+                            <% for (model.SolicitudMensaje msg : mensajes) { %>
+                                <% if ("student".equals(msg.getAutorRol())) { %>
+                                    <div class="flex justify-end">
+                                        <div class="max-w-xs bg-blue-100 text-blue-900 rounded-xl rounded-tr-none p-2.5">
+                                            <p class="text-xs font-semibold mb-1">Estudiante</p>
+                                            <p class="text-sm"><%= msg.getMensaje() %></p>
+                                            <p class="text-[10px] mt-1 opacity-70"><%= msg.getFechaEnvio().toLocalTime().toString().substring(0, 5) %></p>
+                                        </div>
+                                    </div>
+                                <% } else { %>
+                                    <div class="flex justify-start">
+                                        <div class="max-w-xs bg-[#c8102e] text-white rounded-xl rounded-tl-none p-2.5">
+                                            <p class="text-xs font-semibold mb-1">Tú (Admin)</p>
+                                            <p class="text-sm"><%= msg.getMensaje() %></p>
+                                            <p class="text-[10px] mt-1 opacity-70"><%= msg.getFechaEnvio().toLocalTime().toString().substring(0, 5) %></p>
+                                        </div>
+                                    </div>
+                                <% } %>
+                            <% } %>
+                        <% } %>
+                    </div>
+
+                    <form action="<%=request.getContextPath()%>/admin/request-detail" method="post" class="flex gap-2 mb-4">
+                        <input type="hidden" name="id" value="<%= sol.getId() %>" />
+                        <input type="hidden" name="action" value="message" />
+                        <input type="text" name="comentario" placeholder="Responde al estudiante..." maxlength="500" required 
+                               class="flex-1 px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#c8102e]/50" />
+                        <button type="submit" class="px-3 py-2 bg-[#c8102e]/10 text-[#c8102e] rounded-lg font-semibold hover:bg-[#c8102e]/20 transition-colors">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Resolution section -->
+                <% if (!"Aprobada".equals(sol.getEstado()) && !"Rechazada".equals(sol.getEstado())) { %>
+                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                    <h3 class="font-bold text-gray-800 mb-4"><i class="fa-solid fa-gavel text-[#c8102e] mr-2"></i> Resolución</h3>
+                    
+                    <form action="<%=request.getContextPath()%>/admin/request-detail" method="post" class="flex flex-col gap-4">
                         <input type="hidden" name="id" value="<%= sol.getId() %>" />
                         
                         <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Comentario de Resolución</label>
-                            <textarea name="comentario" rows="5" placeholder="Escribe los motivos de la decisión..."
-                                      class="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#c8102e]/50 focus:bg-white transition-colors resize-none" required></textarea>
-                            <p class="text-[10px] text-gray-400 mt-1.5"><i class="fa-solid fa-circle-info mr-1"></i> Este comentario será visible para el estudiante.</p>
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Comentario final</label>
+                            <textarea name="comentario" rows="3" placeholder="Explica el motivo de la decisión..."
+                                      class="w-full px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#c8102e]/50 resize-none" required></textarea>
                         </div>
 
-                        <div class="flex flex-col gap-3 mt-2">
+                        <div class="flex flex-col gap-2">
                             <button type="submit" name="newState" value="Aprobada" 
-                                    class="w-full bg-green-500 text-white font-bold py-3 rounded-xl hover:bg-green-600 transition-colors flex justify-center items-center gap-2 shadow-md shadow-green-500/20">
-                                <i class="fa-solid fa-check"></i> Aprobar Solicitud
+                                    class="w-full bg-green-500 text-white font-bold py-2 rounded-lg hover:bg-green-600 transition-colors flex justify-center items-center gap-2 text-sm">
+                                <i class="fa-solid fa-check"></i> Aprobar
                             </button>
                             <button type="submit" name="newState" value="Rechazada" 
-                                    class="w-full bg-white text-[#c8102e] border-2 border-[#c8102e] font-bold py-2.5 rounded-xl hover:bg-red-50 transition-colors flex justify-center items-center gap-2">
-                                <i class="fa-solid fa-xmark"></i> Rechazar Solicitud
+                                    class="w-full bg-white text-[#c8102e] border-2 border-[#c8102e] font-bold py-1.5 rounded-lg hover:bg-red-50 transition-colors flex justify-center items-center gap-2 text-sm">
+                                <i class="fa-solid fa-xmark"></i> Rechazar
                             </button>
                         </div>
                     </form>
                 </div>
-            </div>
+                <% } %>
         </div>
 
     </div>
