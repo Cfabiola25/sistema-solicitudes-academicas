@@ -17,6 +17,9 @@ public class Student {
     private Integer programaId;
     private Integer sedeId;
     private Integer jornadaId;
+    private String programaNombre;
+    private String sedeNombre;
+    private String jornadaNombre;
 
     public Student() {}
 
@@ -94,6 +97,30 @@ public class Student {
 
     public void setJornadaId(Integer jornadaId) {
         this.jornadaId = jornadaId;
+    }
+
+    public String getProgramaNombre() {
+        return programaNombre;
+    }
+
+    public void setProgramaNombre(String programaNombre) {
+        this.programaNombre = programaNombre;
+    }
+
+    public String getSedeNombre() {
+        return sedeNombre;
+    }
+
+    public void setSedeNombre(String sedeNombre) {
+        this.sedeNombre = sedeNombre;
+    }
+
+    public String getJornadaNombre() {
+        return jornadaNombre;
+    }
+
+    public void setJornadaNombre(String jornadaNombre) {
+        this.jornadaNombre = jornadaNombre;
     }
 
     public String getNombreCompleto() {
