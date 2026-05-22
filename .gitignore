@@ -24,6 +24,8 @@ Thumbs.db
 .idea/
 .vscode/
 .github/prompts/*
+.antigravitycli
+sistemas-solicitudes-academicas.iml
 
 # Config
 src/java/database.properties
