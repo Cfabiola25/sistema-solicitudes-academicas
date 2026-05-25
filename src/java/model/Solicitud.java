@@ -18,6 +18,8 @@ public class Solicitud {
     private LocalDateTime fechaRespuesta;
     private String comentarioRespuesta;
     private Admin administrador;
+    private Admin responsable;
+    private LocalDateTime fechaLimite;
 
     public Solicitud() {}
 
@@ -116,5 +118,21 @@ public class Solicitud {
 
     public void setAdministrador(Admin administrador) {
         this.administrador = administrador;
+    }
+
+    public Admin getResponsable() {
+        return responsable;
+    }
+
+    public void setResponsable(Admin responsable) {
+        this.responsable = responsable;
+    }
+
+    public LocalDateTime getFechaLimite() {
+        return fechaLimite;
+    }
+
+    public void setFechaLimite(LocalDateTime fechaLimite) {
+        this.fechaLimite = fechaLimite;
     }
 }

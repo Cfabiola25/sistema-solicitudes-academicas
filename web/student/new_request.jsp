@@ -52,6 +52,9 @@
             <a href="<%=request.getContextPath()%>/student/requests" class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-500 transition-all">
                 <i class="fa-regular fa-folder-open text-sm w-4 text-center text-gray-400"></i> Mis Solicitudes
             </a>
+            <a href="<%=request.getContextPath()%>/student/profile" class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-500 transition-all">
+                <i class="fa-solid fa-user text-sm w-4 text-center text-gray-400"></i> Mi Perfil
+            </a>               
         </nav>
     </div>
     <a href="<%=request.getContextPath()%>/logout" class="flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-gray-400 hover:text-[#c8102e] transition-colors rounded-xl hover:bg-red-50">

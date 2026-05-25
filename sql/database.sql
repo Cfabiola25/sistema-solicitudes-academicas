@@ -1,151 +1,230 @@
--- SQL script to create and populate the database for the
--- Sistema de Solicitudes Académicas. Run this script in your
--- MySQL client to set up the schema and insert initial data.
+-- =========================================================
+-- Base de datos: fesc_solicitudes
+-- Proyecto: Sistema de Solicitudes Académicas FESC
+-- Motor recomendado: MySQL 8.x / MariaDB 10.x
+-- =========================================================
 
-CREATE DATABASE IF NOT EXISTS fesc_solicitudes;
+DROP DATABASE IF EXISTS fesc_solicitudes;
+
+CREATE DATABASE fesc_solicitudes
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+
 USE fesc_solicitudes;
 
--- Drop tables in order of foreign key dependencies to allow clean recreation
-DROP TABLE IF EXISTS auditoria_retraso;
-DROP TABLE IF EXISTS solicitud_mensaje;
-DROP TABLE IF EXISTS solicitud;
-DROP TABLE IF EXISTS estudiante;
-DROP TABLE IF EXISTS administrador;
-DROP TABLE IF EXISTS tipo_solicitud;
-DROP TABLE IF EXISTS programa_academico;
-DROP TABLE IF EXISTS sede;
-DROP TABLE IF EXISTS jornada;
+-- =========================================================
+-- Tablas maestras
+-- =========================================================
 
+CREATE TABLE sede (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  nombre VARCHAR(50) NOT NULL,
 
--- Table definitions
+  CONSTRAINT uk_sede_nombre UNIQUE (nombre)
+) ENGINE=InnoDB;
 
-CREATE TABLE IF NOT EXISTS tipo_solicitud (
-  id INT AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE jornada (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  nombre VARCHAR(50) NOT NULL,
+
+  CONSTRAINT uk_jornada_nombre UNIQUE (nombre)
+) ENGINE=InnoDB;
+
+CREATE TABLE programa_academico (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  codigo VARCHAR(20) NOT NULL,
+  nombre VARCHAR(200) NOT NULL,
+
+  CONSTRAINT uk_programa_codigo UNIQUE (codigo),
+  CONSTRAINT uk_programa_nombre UNIQUE (nombre)
+) ENGINE=InnoDB;
+
+CREATE TABLE tipo_solicitud (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   nombre VARCHAR(100) NOT NULL,
-  tiempo_respuesta_dias INT DEFAULT 5,
-  tipo_tiempo ENUM('habiles', 'calendario') DEFAULT 'habiles'
-);
+  tiempo_respuesta_dias INT UNSIGNED NOT NULL DEFAULT 5,
+  tipo_tiempo ENUM('habiles', 'calendario') NOT NULL DEFAULT 'habiles',
+  activo TINYINT(1) NOT NULL DEFAULT 1,
 
-CREATE TABLE IF NOT EXISTS programa_academico (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  codigo VARCHAR(10),
-  nombre VARCHAR(200) NOT NULL
-);
+  CONSTRAINT uk_tipo_solicitud_nombre UNIQUE (nombre),
+  CONSTRAINT chk_tipo_solicitud_tiempo CHECK (tiempo_respuesta_dias > 0)
+) ENGINE=InnoDB;
 
-CREATE TABLE IF NOT EXISTS sede (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  nombre VARCHAR(50) NOT NULL
-);
+-- =========================================================
+-- Usuarios del sistema
+-- =========================================================
 
-CREATE TABLE IF NOT EXISTS jornada (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  nombre VARCHAR(50) NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS estudiante (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  nombre VARCHAR(100),
-  apellido VARCHAR(100),
-  email VARCHAR(100) UNIQUE,
-  password VARCHAR(200),
-  programa_id INT,
-  sede_id INT,
-  jornada_id INT,
-  terminos_aceptados TINYINT(1) DEFAULT 0,
-  recuperacion_token VARCHAR(100) NULL,
+CREATE TABLE estudiante (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  nombre VARCHAR(100) NOT NULL,
+  apellido VARCHAR(100) NOT NULL,
+  email VARCHAR(120) NOT NULL,
+  password VARCHAR(255) NOT NULL,
+  programa_id INT UNSIGNED NOT NULL,
+  sede_id INT UNSIGNED NOT NULL,
+  jornada_id INT UNSIGNED NOT NULL,
+  terminos_aceptados TINYINT(1) NOT NULL DEFAULT 0,
+  recuperacion_token VARCHAR(150) NULL,
   token_expiracion DATETIME NULL,
-  FOREIGN KEY (programa_id) REFERENCES programa_academico(id),
-  FOREIGN KEY (sede_id) REFERENCES sede(id),
-  FOREIGN KEY (jornada_id) REFERENCES jornada(id)
-);
+  fecha_creacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  fecha_actualizacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
-CREATE TABLE IF NOT EXISTS administrador (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  nombre VARCHAR(100),
-  email VARCHAR(100) UNIQUE,
-  password VARCHAR(200),
-  rol VARCHAR(50) DEFAULT 'Coordinador',
-  recuperacion_token VARCHAR(100) NULL,
-  token_expiracion DATETIME NULL
-);
+  CONSTRAINT uk_estudiante_email UNIQUE (email),
+  CONSTRAINT fk_estudiante_programa
+    FOREIGN KEY (programa_id) REFERENCES programa_academico(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT,
+  CONSTRAINT fk_estudiante_sede
+    FOREIGN KEY (sede_id) REFERENCES sede(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT,
+  CONSTRAINT fk_estudiante_jornada
+    FOREIGN KEY (jornada_id) REFERENCES jornada(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT,
+  CONSTRAINT chk_estudiante_terminos CHECK (terminos_aceptados IN (0, 1))
+) ENGINE=InnoDB;
 
-CREATE TABLE IF NOT EXISTS solicitud (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  estudiante_id INT,
-  tipo_solicitud_id INT,
-  descripcion TEXT,
-  fecha_solicitud DATETIME DEFAULT CURRENT_TIMESTAMP,
-  estado ENUM('Enviada','Pendiente','Aprobada','Rechazada') DEFAULT 'Enviada',
-  documento VARCHAR(200),
-  fecha_respuesta DATETIME,
-  comentario_respuesta TEXT,
-  admin_id INT,
-  responsable_id INT,
+CREATE TABLE administrador (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  nombre VARCHAR(100) NOT NULL,
+  email VARCHAR(120) NOT NULL,
+  password VARCHAR(255) NOT NULL,
+  rol ENUM('SuperAdmin', 'Coordinador', 'Secretaria') NOT NULL DEFAULT 'Coordinador',
+  recuperacion_token VARCHAR(150) NULL,
+  token_expiracion DATETIME NULL,
+  activo TINYINT(1) NOT NULL DEFAULT 1,
+  fecha_creacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  fecha_actualizacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+  CONSTRAINT uk_administrador_email UNIQUE (email),
+  CONSTRAINT chk_administrador_activo CHECK (activo IN (0, 1))
+) ENGINE=InnoDB;
+
+-- =========================================================
+-- Solicitudes académicas
+-- =========================================================
+
+CREATE TABLE solicitud (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  estudiante_id INT UNSIGNED NOT NULL,
+  tipo_solicitud_id INT UNSIGNED NOT NULL,
+  descripcion TEXT NOT NULL,
+  fecha_solicitud DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  estado ENUM('Enviada', 'Pendiente', 'Aprobada', 'Rechazada', 'Anulada') NOT NULL DEFAULT 'Enviada',
+  documento VARCHAR(255) NULL,
   fecha_limite DATETIME NULL,
-  FOREIGN KEY (estudiante_id) REFERENCES estudiante(id),
-  FOREIGN KEY (tipo_solicitud_id) REFERENCES tipo_solicitud(id),
-  FOREIGN KEY (admin_id) REFERENCES administrador(id),
-  FOREIGN KEY (responsable_id) REFERENCES administrador(id)
-);
+  fecha_respuesta DATETIME NULL,
+  comentario_respuesta TEXT NULL,
+  admin_id INT UNSIGNED NULL,
+  responsable_id INT UNSIGNED NULL,
 
-CREATE TABLE IF NOT EXISTS auditoria_retraso (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  solicitud_id INT NOT NULL,
-  admin_id INT NOT NULL,
-  dias_retraso INT NOT NULL,
-  fecha_auditoria DATETIME DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (solicitud_id) REFERENCES solicitud(id) ON DELETE CASCADE,
-  FOREIGN KEY (admin_id) REFERENCES administrador(id)
-);
+  CONSTRAINT fk_solicitud_estudiante
+    FOREIGN KEY (estudiante_id) REFERENCES estudiante(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT,
+  CONSTRAINT fk_solicitud_tipo
+    FOREIGN KEY (tipo_solicitud_id) REFERENCES tipo_solicitud(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT,
+  CONSTRAINT fk_solicitud_admin_respuesta
+    FOREIGN KEY (admin_id) REFERENCES administrador(id)
+    ON UPDATE CASCADE ON DELETE SET NULL,
+  CONSTRAINT fk_solicitud_responsable
+    FOREIGN KEY (responsable_id) REFERENCES administrador(id)
+    ON UPDATE CASCADE ON DELETE SET NULL
+) ENGINE=InnoDB;
 
-CREATE TABLE IF NOT EXISTS solicitud_mensaje (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  solicitud_id INT NOT NULL,
-  autor_rol ENUM('student','admin') NOT NULL,
+CREATE TABLE solicitud_mensaje (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  solicitud_id INT UNSIGNED NOT NULL,
+  autor_rol ENUM('student', 'admin') NOT NULL,
   autor_nombre VARCHAR(150) NOT NULL,
   mensaje TEXT NOT NULL,
-  fecha_envio DATETIME DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (solicitud_id) REFERENCES solicitud(id) ON DELETE CASCADE
-);
+  archivo VARCHAR(255) NULL,
+  fecha_envio DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
--- Insert lookup data
-INSERT INTO sede (nombre) VALUES ('Cúcuta'), ('Ocaña');
-INSERT INTO jornada (nombre) VALUES ('Diurna'), ('Nocturna'), ('Distancia'), ('Virtual');
+  CONSTRAINT fk_mensaje_solicitud
+    FOREIGN KEY (solicitud_id) REFERENCES solicitud(id)
+    ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB;
 
--- Insert tipos de solicitud (from data dictionary)
-INSERT INTO tipo_solicitud (nombre) VALUES
-('Cancelación de semestre'),
-('Curso dirigido'),
-('Cancelación de asignaturas'),
-('Cambio de jornada'),
-('Transferencia interna'),
-('Examen de validación por suficiencia'),
-('Reingreso'),
-('Matrícula mínima de créditos'),
-('Traslado de sede'),
-('Pago de créditos adicionales'),
-('Constancia de estudio'),
-('Certificado de notas'),
-('Otra');
+CREATE TABLE auditoria_retraso (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  solicitud_id INT UNSIGNED NOT NULL,
+  admin_id INT UNSIGNED NOT NULL,
+  dias_retraso INT UNSIGNED NOT NULL,
+  fecha_auditoria DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
--- Insert sample academic programs
+  CONSTRAINT fk_auditoria_solicitud
+    FOREIGN KEY (solicitud_id) REFERENCES solicitud(id)
+    ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT fk_auditoria_admin
+    FOREIGN KEY (admin_id) REFERENCES administrador(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+-- =========================================================
+-- Índices para búsquedas frecuentes
+-- =========================================================
+
+CREATE INDEX idx_estudiante_programa ON estudiante(programa_id);
+CREATE INDEX idx_estudiante_sede ON estudiante(sede_id);
+CREATE INDEX idx_estudiante_jornada ON estudiante(jornada_id);
+CREATE INDEX idx_solicitud_estudiante ON solicitud(estudiante_id);
+CREATE INDEX idx_solicitud_tipo ON solicitud(tipo_solicitud_id);
+CREATE INDEX idx_solicitud_estado ON solicitud(estado);
+CREATE INDEX idx_solicitud_fecha ON solicitud(fecha_solicitud);
+CREATE INDEX idx_solicitud_responsable ON solicitud(responsable_id);
+CREATE INDEX idx_mensaje_solicitud ON solicitud_mensaje(solicitud_id);
+CREATE INDEX idx_auditoria_solicitud ON auditoria_retraso(solicitud_id);
+
+-- =========================================================
+-- Datos iniciales
+-- =========================================================
+
+INSERT INTO sede (nombre) VALUES
+('Cúcuta'),
+('Ocaña');
+
+INSERT INTO jornada (nombre) VALUES
+('Diurna'),
+('Nocturna'),
+('Distancia'),
+('Virtual');
+
 INSERT INTO programa_academico (codigo, nombre) VALUES
 ('90604', 'Técnica Profesional en Operaciones Logísticas'),
 ('90605', 'Tecnología en Gestión Logística Empresarial'),
 ('107860', 'Tecnología en Desarrollo de Software'),
 ('107861', 'Ingeniería de Software');
 
--- Insert sample students (passwords are secure hashes for '1234')
-INSERT INTO estudiante (nombre, apellido, email, password, programa_id, sede_id, jornada_id, terminos_aceptados) VALUES
-('Juan', 'Pérez', 'juan.perez@example.com', 'NH0ODzMnTen8FGAGFnnUnQ==:ek1xhK2SWdyyhvOUJ0TrHd4pstSJT21bMrVEBaf/+sA=', 3, 1, 1, 1),
-('Maria', 'Gómez', 'maria.gomez@example.com', 'NH0ODzMnTen8FGAGFnnUnQ==:ek1xhK2SWdyyhvOUJ0TrHd4pstSJT21bMrVEBaf/+sA=', 4, 1, 1, 1);
+INSERT INTO tipo_solicitud (nombre, tiempo_respuesta_dias, tipo_tiempo) VALUES
+('Cancelación de semestre', 5, 'habiles'),
+('Curso dirigido', 5, 'habiles'),
+('Cancelación de asignaturas', 5, 'habiles'),
+('Cambio de jornada', 5, 'habiles'),
+('Transferencia interna', 5, 'habiles'),
+('Examen de validación por suficiencia', 7, 'calendario'),
+('Reingreso', 5, 'habiles'),
+('Matrícula mínima de créditos', 5, 'habiles'),
+('Traslado de sede', 5, 'habiles'),
+('Pago de créditos adicionales', 5, 'habiles'),
+('Constancia de estudio', 3, 'habiles'),
+('Certificado de notas', 3, 'habiles'),
+('Otra', 5, 'habiles');
 
--- Insert sample administrator (password is secure hash for 'admin')
-INSERT INTO administrador (nombre, email, password, rol) VALUES
-('Administrador', 'admin@example.com', 'r5FLHDAUCXgd47rQLn+SzA==:g5u4G/HVfD85RntwRM/7z8HkDRRvpDKQp8b9M6pywT0=', 'SuperAdmin');
+-- Contraseña de prueba: conservar el hash generado por la aplicación.
+INSERT INTO estudiante
+(nombre, apellido, email, password, programa_id, sede_id, jornada_id, terminos_aceptados)
+VALUES
+('Juan', 'Pérez', 'juan.perez@example.com',
+ 'NH0ODzMnTen8FGAGFnnUnQ==:ek1xhK2SWdyyhvOUJ0TrHd4pstSJT21bMrVEBaf/+sA=',
+ 3, 1, 1, 1),
+('María', 'Gómez', 'maria.gomez@example.com',
+ 'NH0ODzMnTen8FGAGFnnUnQ==:ek1xhK2SWdyyhvOUJ0TrHd4pstSJT21bMrVEBaf/+sA=',
+ 4, 1, 1, 1);
 
--- Insert sample requests
-INSERT INTO solicitud (estudiante_id, tipo_solicitud_id, descripcion, estado) VALUES
-(1, 1, 'Deseo cancelar el semestre por motivos personales.', 'Pendiente'),
-(1, 3, 'Necesito cancelar la asignatura de Matemáticas.', 'Aprobada'),
-(2, 4, 'Solicito cambio de jornada a nocturna.', 'Rechazada');
+-- Usuario administrador inicial.
+INSERT INTO administrador (nombre, email, password, rol)
+VALUES
+('Administrador', 'admin@example.com',
+ 'r5FLHDAUCXgd47rQLn+SzA==:g5u4G/HVfD85RntwRM/7z8HkDRRvpDKQp8b9M6pywT0=',
+ 'SuperAdmin');
+
+SELECT 'BASE DE DATOS CREADA CORRECTAMENTE' AS resultado;

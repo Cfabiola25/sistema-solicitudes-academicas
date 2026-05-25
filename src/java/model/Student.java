@@ -20,6 +20,7 @@ public class Student {
     private String programaNombre;
     private String sedeNombre;
     private String jornadaNombre;
+    private boolean terminosAceptados;
 
     public Student() {}
 
@@ -121,6 +122,14 @@ public class Student {
 
     public void setJornadaNombre(String jornadaNombre) {
         this.jornadaNombre = jornadaNombre;
+    }
+
+    public boolean isTerminosAceptados() {
+        return terminosAceptados;
+    }
+
+    public void setTerminosAceptados(boolean terminosAceptados) {
+        this.terminosAceptados = terminosAceptados;
     }
 
     public String getNombreCompleto() {

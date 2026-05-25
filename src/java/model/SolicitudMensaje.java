@@ -8,16 +8,18 @@ public class SolicitudMensaje {
     private String autorRol;
     private String autorNombre;
     private String mensaje;
+    private String archivo;
     private LocalDateTime fechaEnvio;
 
     public SolicitudMensaje() {}
 
-    public SolicitudMensaje(int id, int solicitudId, String autorRol, String autorNombre, String mensaje, LocalDateTime fechaEnvio) {
+    public SolicitudMensaje(int id, int solicitudId, String autorRol, String autorNombre, String mensaje, String archivo, LocalDateTime fechaEnvio) {
         this.id = id;
         this.solicitudId = solicitudId;
         this.autorRol = autorRol;
         this.autorNombre = autorNombre;
         this.mensaje = mensaje;
+        this.archivo = archivo;
         this.fechaEnvio = fechaEnvio;
     }
 
@@ -59,6 +61,14 @@ public class SolicitudMensaje {
 
     public void setMensaje(String mensaje) {
         this.mensaje = mensaje;
+    }
+
+    public String getArchivo() {
+        return archivo;
+    }
+
+    public void setArchivo(String archivo) {
+        this.archivo = archivo;
     }
 
     public LocalDateTime getFechaEnvio() {

@@ -15,22 +15,88 @@ import java.util.List;
 /**
  * Displays all requests to the administrator with optional
  * filtering by status via the 'state' request parameter.
+ * Includes pagination and keeps the structure open for future filters.
  */
 @WebServlet(name = "AdminRequestsServlet", urlPatterns = {"/admin/requests"})
 public class AdminRequestsServlet extends HttpServlet {
-    private AdminDAO adminDAO = new AdminDAO();
+
+    private final AdminDAO adminDAO = new AdminDAO();
+    private static final int PAGE_SIZE = 10;
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
         HttpSession session = request.getSession(false);
-        if (session == null || !"admin".equals(session.getAttribute("role"))) {
+
+        if (!isAdminSession(session)) {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
-        String state = request.getParameter("state");
-        List<Solicitud> list = adminDAO.getAllRequests(state);
+
+        String state = clean(request.getParameter("state"));
+        int page = getPage(request);
+
+        int totalRecords = adminDAO.getRequestsCount(state);
+        int totalPages = calculateTotalPages(totalRecords);
+
+        if (page > totalPages && totalPages > 0) {
+            page = totalPages;
+        }
+
+        List<Solicitud> list = adminDAO.getAllRequestsPaged(state, page, PAGE_SIZE);
+
         request.setAttribute("list", list);
         request.setAttribute("selectedState", state);
+        request.setAttribute("currentPage", page);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("totalRecords", totalRecords);
+        request.setAttribute("pageSize", PAGE_SIZE);
+
         request.getRequestDispatcher("/admin/requests.jsp").forward(request, response);
+    }
+
+    /**
+     * Validates that the current session belongs to an administrator.
+     */
+    private boolean isAdminSession(HttpSession session) {
+        return session != null && "admin".equals(session.getAttribute("role"));
+    }
+
+    /**
+     * Gets the current page from the request.
+     */
+    private int getPage(HttpServletRequest request) {
+        Integer page = parseInteger(request.getParameter("page"));
+        return page == null || page < 1 ? 1 : page;
+    }
+
+    /**
+     * Calculates the total number of pages.
+     */
+    private int calculateTotalPages(int totalRecords) {
+        return (int) Math.ceil((double) totalRecords / PAGE_SIZE);
+    }
+
+    /**
+     * Safely converts a string parameter to Integer.
+     */
+    private Integer parseInteger(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return null;
+        }
+
+        try {
+            return Integer.parseInt(value.trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Cleans request parameters to avoid null values and unnecessary spaces.
+     */
+    private String clean(String value) {
+        return value == null ? "" : value.trim();
     }
 }
