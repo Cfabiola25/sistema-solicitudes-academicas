@@ -1,12 +1,10 @@
 # NetBeans
 /nbproject/private/
 /build/
-/dist/
 
 # Java
 *.class
 *.jar
-*.war
 *.ear
 
 # Tomcat / uploads
