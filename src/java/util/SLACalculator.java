@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 
 /**
  * Utility class for SLA calculations.
- * Supports calendar days and custom working days (excluding Saturday, Sunday, and Monday).
+ * Supports calendar days and custom working days (excluding Saturday and Sunday).
  */
 public class SLACalculator {
 
@@ -25,14 +25,14 @@ public class SLACalculator {
         if ("calendario".equalsIgnoreCase(type)) {
             return start.plusDays(days);
         } else {
-            // "habiles" - exclude Saturday, Sunday, and Monday.
-            // Working days are Tuesday, Wednesday, Thursday, Friday.
+            // "habiles" - exclude Saturday and Sunday.
+            // Working days are Monday through Friday.
             LocalDateTime current = start;
             int addedDays = 0;
             while (addedDays < days) {
                 current = current.plusDays(1);
                 DayOfWeek dow = current.getDayOfWeek();
-                if (dow != DayOfWeek.SATURDAY && dow != DayOfWeek.SUNDAY && dow != DayOfWeek.MONDAY) {
+                if (dow != DayOfWeek.SATURDAY && dow != DayOfWeek.SUNDAY) {
                     addedDays++;
                 }
             }
