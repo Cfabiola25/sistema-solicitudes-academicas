@@ -2,21 +2,24 @@
 FROM eclipse-temurin:21-jdk AS builder
 WORKDIR /app
 
-# Instalar Apache Ant y dependencias de red
+# Instalar Apache Ant y curl
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ant curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Descargar Tomcat temporalmente para satisfacer las dependencias de compilación de NetBeans
+# Descargar Tomcat temporalmente (para resolver j2ee.server.home)
 RUN curl -fsSL https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.80/bin/apache-tomcat-9.0.80.tar.gz -o /tmp/tomcat.tar.gz \
     && mkdir -p /opt/tomcat-build \
     && tar -xzf /tmp/tomcat.tar.gz -C /opt/tomcat-build --strip-components=1
 
+# Descargar la librería CopyLibs de NetBeans (para resolver libs.CopyLibs.classpath)
+RUN curl -fsSL https://repo1.maven.org/maven2/org/netbeans/api/org-netbeans-modules-java-j2seproject-copylibstask/RELEASE120/org-netbeans-modules-java-j2seproject-copylibstask-RELEASE120.jar -o /opt/copylibs.jar
+
 # Copiar el código fuente
 COPY . .
 
-# Compilar indicándole a Ant dónde está el servidor
-RUN ant -Dj2ee.server.home=/opt/tomcat-build
+# Compilar indicándole a Ant dónde están las dependencias de servidor y de empaquetado
+RUN ant -Dj2ee.server.home=/opt/tomcat-build -Dlibs.CopyLibs.classpath=/opt/copylibs.jar
 
 # Etapa 2: Producción — JRE 21 + Tomcat instalado manualmente para asegurar compatibilidad con Java 21
 FROM eclipse-temurin:21-jre AS runtime
