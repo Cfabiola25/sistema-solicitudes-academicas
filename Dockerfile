@@ -2,9 +2,9 @@
 FROM eclipse-temurin:21-jdk AS builder
 WORKDIR /app
 
-# Instalar Apache Ant y curl
+# Instalar Apache Ant, curl y unzip
 RUN apt-get update \
-    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ant curl \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ant curl unzip \
     && rm -rf /var/lib/apt/lists/*
 
 # Descargar Tomcat temporalmente (para resolver j2ee.server.home)
@@ -12,8 +12,11 @@ RUN curl -fsSL https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.80/bin/apach
     && mkdir -p /opt/tomcat-build \
     && tar -xzf /tmp/tomcat.tar.gz -C /opt/tomcat-build --strip-components=1
 
-# Descargar la librería CopyLibs de NetBeans (para resolver libs.CopyLibs.classpath)
-RUN curl -fsSL https://repo1.maven.org/maven2/org/netbeans/api/org-netbeans-modules-java-j2seproject-copylibstask/RELEASE120/org-netbeans-modules-java-j2seproject-copylibstask-RELEASE120.jar -o /opt/copylibs.jar
+# Descargar NetBeans 12.0 oficial, extraer solo copylibstask.jar y limpiar
+RUN curl -fsSL https://archive.apache.org/dist/netbeans/netbeans/12.0/netbeans-12.0-bin.zip -o /tmp/netbeans.zip \
+    && unzip -j /tmp/netbeans.zip "netbeans/java/ant/extra/org-netbeans-modules-java-j2seproject-copylibstask.jar" -d /opt/ \
+    && rm /tmp/netbeans.zip \
+    && mv /opt/org-netbeans-modules-java-j2seproject-copylibstask.jar /opt/copylibs.jar
 
 # Copiar el código fuente
 COPY . .
@@ -42,7 +45,7 @@ RUN curl -fsSL https://archive.apache.org/dist/tomcat/tomcat-9/v${TOMCAT_VERSION
 # Limpiar las aplicaciones por defecto de Tomcat
 RUN rm -rf $CATALINA_HOME/webapps/*
 
-# Copiar el WAR generado (Asegúrate de que el nombre del war coincida con el que genera tu proyecto)
+# Copiar el WAR generado
 COPY --from=builder /app/dist/*.war $CATALINA_HOME/webapps/ROOT.war
 
 # Crear un usuario `tomcat` y directorio para adjuntos; asignar propiedad a tomcat
