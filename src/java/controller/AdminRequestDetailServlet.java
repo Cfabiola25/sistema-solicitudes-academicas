@@ -12,6 +12,7 @@ import javax.servlet.http.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.Locale;
 
 /**
  * Allows an administrator to view and respond to a specific request.
@@ -23,6 +24,16 @@ import java.nio.file.Paths;
         maxRequestSize = 1024 * 1024 * 10
 )
 public class AdminRequestDetailServlet extends HttpServlet {
+
+    private static final long MAX_FILE_SIZE_BYTES = 1024L * 1024L * 5L;
+    private static final String[] ALLOWED_EXTENSIONS = {"pdf", "docx", "jpg", "jpeg", "png", "webp"};
+    private static final String[] ALLOWED_CONTENT_TYPES = {
+            "application/pdf",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+    };
 
     private final AdminDAO adminDAO = new AdminDAO();
     private final SolicitudMensajeDAO mensajeDAO = new SolicitudMensajeDAO();
@@ -125,16 +136,37 @@ public class AdminRequestDetailServlet extends HttpServlet {
             return null;
         }
 
+        if (filePart.getSize() > MAX_FILE_SIZE_BYTES) {
+            throw new ServletException("El archivo supera el tamaño máximo permitido de 5 MB.");
+        }
+
         String submittedName = Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
 
         if (submittedName == null || submittedName.trim().isEmpty()) {
             return null;
         }
 
+        String extension = getFileExtension(submittedName);
+
+        if (extension == null || !isAllowedExtension(extension)) {
+            throw new ServletException("Formato no permitido. Usa PDF, DOCX, JPG, JPEG, PNG o WEBP.");
+        }
+
+        String contentType = filePart.getContentType();
+
+        if (contentType == null || !isAllowedContentType(contentType)) {
+            throw new ServletException("Formato no permitido. Usa PDF, DOCX, JPG, JPEG, PNG o WEBP.");
+        }
+
         String safeFileName = System.currentTimeMillis() + "_" +
                 submittedName.replaceAll("[^a-zA-Z0-9._-]", "_");
 
-        String uploadsDir = getServletContext().getRealPath("") + File.separator + "uploads" + File.separator + "messages";
+        String uploadsDir = getServletContext().getRealPath("/uploads/messages");
+
+        if (uploadsDir == null) {
+            throw new ServletException("No se pudo resolver la carpeta de archivos adjuntos.");
+        }
+
         File uploads = new File(uploadsDir);
 
         if (!uploads.exists()) {
@@ -145,6 +177,40 @@ public class AdminRequestDetailServlet extends HttpServlet {
         filePart.write(file.getAbsolutePath());
 
         return "uploads/messages/" + safeFileName;
+    }
+
+    private boolean isAllowedExtension(String extension) {
+        String normalized = extension.toLowerCase(Locale.ROOT);
+
+        for (String allowed : ALLOWED_EXTENSIONS) {
+            if (allowed.equals(normalized)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean isAllowedContentType(String contentType) {
+        String normalized = contentType.toLowerCase(Locale.ROOT);
+
+        for (String allowed : ALLOWED_CONTENT_TYPES) {
+            if (allowed.equals(normalized)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private String getFileExtension(String fileName) {
+        int dotIndex = fileName.lastIndexOf('.');
+
+        if (dotIndex < 0 || dotIndex == fileName.length() - 1) {
+            return null;
+        }
+
+        return fileName.substring(dotIndex + 1);
     }
 
     private void assignResponsible(HttpServletRequest request, int requestId) {
