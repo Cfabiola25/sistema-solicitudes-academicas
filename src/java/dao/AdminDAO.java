@@ -7,6 +7,7 @@ import model.TipoSolicitud;
 
 import java.sql.*;
 import java.time.LocalDateTime;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -14,7 +15,7 @@ import java.util.*;
  */
 public class AdminDAO {
 
-    private static final String DEFAULT_ADMIN_ROLE = "admin";
+    private static final String DEFAULT_ADMIN_ROLE = "Admin";
 
     public Admin login(String email, String password) {
         String sql = "SELECT * FROM administrador WHERE email = ?";
@@ -49,7 +50,7 @@ public class AdminDAO {
 
     /**
      * Creates a new administrator.
-     * Role is always stored as 'admin'.
+     * Role is stored using a valid database value for administrator accounts.
      */
     public boolean createAdmin(Admin admin) {
         String sql = "INSERT INTO administrador (nombre, email, password, rol) VALUES (?, ?, ?, ?)";
@@ -202,6 +203,15 @@ public class AdminDAO {
         }
     }
 
+    private String fixText(String value) {
+        if (value == null || (!value.contains("Ã") && !value.contains("Â"))) {
+            return value;
+        }
+
+        String repaired = new String(value.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
+        return repaired.isEmpty() ? value : repaired;
+    }
+
     public List<Solicitud> getAllRequests(String filter) {
         return getRequests(filter, 0, 0, false);
     }
@@ -285,6 +295,96 @@ public class AdminDAO {
         return 0;
     }
 
+    public int getRequestsCountForAdmin(String filter, int adminId) {
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM solicitud s");
+        List<Object> params = new ArrayList<>();
+
+        applyFilterSql(sql, filter, params);
+
+        if (params.isEmpty()) {
+            sql.append(" WHERE s.responsable_id = ?");
+        } else {
+            sql.append(" AND s.responsable_id = ?");
+        }
+
+        params.add(adminId);
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return 0;
+    }
+
+    public List<Solicitud> getRequestsForAdminPaged(String filter, int adminId, int page, int pageSize) {
+        List<Solicitud> list = new ArrayList<>();
+
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT s.*, ")
+           .append("ts.nombre AS tipo_nombre, ")
+           .append("e.nombre AS est_nombre, e.apellido AS est_apellido, ")
+           .append("resp.id AS resp_id, resp.nombre AS resp_nombre, resp.email AS resp_email ")
+           .append("FROM solicitud s ")
+           .append("INNER JOIN tipo_solicitud ts ON s.tipo_solicitud_id = ts.id ")
+           .append("INNER JOIN estudiante e ON s.estudiante_id = e.id ")
+           .append("LEFT JOIN administrador resp ON s.responsable_id = resp.id");
+
+        List<Object> params = new ArrayList<>();
+        applyFilterSql(sql, filter, params);
+
+        if (params.isEmpty()) {
+            sql.append(" WHERE s.responsable_id = ?");
+        } else {
+            sql.append(" AND s.responsable_id = ?");
+        }
+
+        sql.append(" ORDER BY s.id DESC");
+
+        if (page > 0 && pageSize > 0) {
+            sql.append(" LIMIT ? OFFSET ?");
+        }
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+            int index = 1;
+            for (Object param : params) {
+                ps.setObject(index++, param);
+            }
+
+            ps.setInt(index++, adminId);
+
+            if (page > 0 && pageSize > 0) {
+                ps.setInt(index++, pageSize);
+                ps.setInt(index, (page - 1) * pageSize);
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapSolicitud(rs));
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
     public Solicitud getRequestById(int requestId) {
         String sql = "SELECT s.*, " +
                 "ts.nombre AS tipo_nombre, " +
@@ -340,7 +440,7 @@ public class AdminDAO {
         student.setApellido(rs.getString("est_apellido"));
         sol.setEstudiante(student);
 
-        TipoSolicitud tipo = new TipoSolicitud(rs.getInt("tipo_solicitud_id"), rs.getString("tipo_nombre"));
+        TipoSolicitud tipo = new TipoSolicitud(rs.getInt("tipo_solicitud_id"), fixText(rs.getString("tipo_nombre")));
         sol.setTipo(tipo);
 
         sol.setDescripcion(rs.getString("descripcion"));
@@ -511,9 +611,9 @@ public class AdminDAO {
                 student.setApellido(rs.getString("apellido"));
                 student.setEmail(rs.getString("email"));
                 student.setPassword(rs.getString("password"));
-                student.setProgramaId((Integer) rs.getObject("programa_id"));
-                student.setSedeId((Integer) rs.getObject("sede_id"));
-                student.setJornadaId((Integer) rs.getObject("jornada_id"));
+                student.setProgramaId(readNullableInteger(rs, "programa_id"));
+                student.setSedeId(readNullableInteger(rs, "sede_id"));
+                student.setJornadaId(readNullableInteger(rs, "jornada_id"));
                 student.setProgramaNombre(rs.getString("prog_nombre"));
                 student.setSedeNombre(rs.getString("sede_nombre"));
                 student.setJornadaNombre(rs.getString("jor_nombre"));
@@ -525,6 +625,11 @@ public class AdminDAO {
         }
 
         return list;
+    }
+
+    private Integer readNullableInteger(ResultSet rs, String columnLabel) throws SQLException {
+        int value = rs.getInt(columnLabel);
+        return rs.wasNull() ? null : value;
     }
 
     public boolean updatePasswordResetToken(String email, String token, LocalDateTime expiration) {

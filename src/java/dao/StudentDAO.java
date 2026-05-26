@@ -6,7 +6,12 @@ import model.Solicitud;
 import model.TipoSolicitud;
 
 import java.sql.*;
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 import java.util.*;
 
 public class StudentDAO {
@@ -28,16 +33,16 @@ public class StudentDAO {
                 if (rs.next()) {
                     String storedPassword = rs.getString("password");
 
-                    if (util.PasswordHasher.verifyPassword(password, storedPassword)) {
+                    if (verifyPassword(password, storedPassword)) {
                         Student student = new Student();
                         student.setId(rs.getInt("id"));
                         student.setNombre(rs.getString("nombre"));
                         student.setApellido(rs.getString("apellido"));
                         student.setEmail(rs.getString("email"));
                         student.setPassword(storedPassword);
-                        student.setProgramaId((Integer) rs.getObject("programa_id"));
-                        student.setSedeId((Integer) rs.getObject("sede_id"));
-                        student.setJornadaId((Integer) rs.getObject("jornada_id"));
+                        student.setProgramaId(readNullableInteger(rs, "programa_id"));
+                        student.setSedeId(readNullableInteger(rs, "sede_id"));
+                        student.setJornadaId(readNullableInteger(rs, "jornada_id"));
                         student.setProgramaNombre(rs.getString("programa_nombre"));
                         student.setSedeNombre(rs.getString("sede_nombre"));
                         student.setJornadaNombre(rs.getString("jornada_nombre"));
@@ -52,6 +57,72 @@ public class StudentDAO {
         }
 
         return null;
+    }
+
+    private Integer readNullableInteger(ResultSet rs, String columnLabel) throws SQLException {
+        int value = rs.getInt(columnLabel);
+        return rs.wasNull() ? null : value;
+    }
+
+    private boolean verifyPassword(String password, String storedPassword) {
+        if (storedPassword == null || !storedPassword.contains(":")) {
+            return false;
+        }
+
+        String[] parts = storedPassword.split(":", 2);
+        if (parts.length != 2) {
+            return false;
+        }
+
+        String salt = parts[0];
+        String expectedHash = parts[1];
+        String actualHash = hashPassword(password, salt);
+
+        return expectedHash.equals(actualHash);
+    }
+
+    private String hashPassword(String password, String salt) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            digest.update(Base64.getDecoder().decode(salt));
+            byte[] hashedBytes = digest.digest(password.getBytes());
+            return Base64.getEncoder().encodeToString(hashedBytes);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("SHA-256 algorithm not found", e);
+        }
+    }
+
+    private LocalDateTime calculateDeadline(LocalDateTime start, int days, String type) {
+        if (start == null) {
+            return null;
+        }
+
+        if ("calendario".equalsIgnoreCase(type)) {
+            return start.plusDays(days);
+        }
+
+        LocalDateTime current = start;
+        int addedDays = 0;
+
+        while (addedDays < days) {
+            current = current.plusDays(1);
+            DayOfWeek dayOfWeek = current.getDayOfWeek();
+            if (dayOfWeek != DayOfWeek.SATURDAY
+                    && dayOfWeek != DayOfWeek.SUNDAY) {
+                addedDays++;
+            }
+        }
+
+        return current;
+    }
+
+    private String fixText(String value) {
+        if (value == null || (!value.contains("Ã") && !value.contains("Â"))) {
+            return value;
+        }
+
+        String repaired = new String(value.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
+        return repaired.isEmpty() ? value : repaired;
     }
 
     public Map<String, Integer> getCountsByStatus(int studentId) {
@@ -160,7 +231,6 @@ public class StudentDAO {
         if (state != null && !state.trim().isEmpty()) {
             sql.append("AND s.estado = ? ");
         }
-
         sql.append("ORDER BY s.id DESC LIMIT ? OFFSET ?");
 
         try (Connection conn = DBConnection.getConnection();
@@ -243,7 +313,7 @@ public class StudentDAO {
                     student.setId(studentId);
                     sol.setEstudiante(student);
 
-                    sol.setTipo(new TipoSolicitud(rs.getInt("tipo_solicitud_id"), rs.getString("tipo_nombre")));
+                    sol.setTipo(new TipoSolicitud(rs.getInt("tipo_solicitud_id"), fixText(rs.getString("tipo_nombre"))));
                     sol.setDescripcion(rs.getString("descripcion"));
                     sol.setEstado(rs.getString("estado"));
                     sol.setDocumento(rs.getString("documento"));
@@ -309,7 +379,7 @@ public class StudentDAO {
             e.printStackTrace();
         }
 
-        LocalDateTime deadline = util.SLACalculator.calculateDeadline(LocalDateTime.now(), days, type);
+        LocalDateTime deadline = calculateDeadline(LocalDateTime.now(), days, type);
 
         String sql = "INSERT INTO solicitud " +
                 "(estudiante_id, tipo_solicitud_id, descripcion, documento, fecha_limite) " +
@@ -518,7 +588,7 @@ public class StudentDAO {
         Solicitud sol = new Solicitud();
 
         sol.setId(rs.getInt("id"));
-        sol.setTipo(new TipoSolicitud(rs.getInt("tipo_solicitud_id"), rs.getString("tipo_nombre")));
+        sol.setTipo(new TipoSolicitud(rs.getInt("tipo_solicitud_id"), fixText(rs.getString("tipo_nombre"))));
         sol.setDescripcion(rs.getString("descripcion"));
         sol.setEstado(rs.getString("estado"));
 
