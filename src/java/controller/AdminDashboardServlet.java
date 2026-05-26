@@ -36,16 +36,32 @@ public class AdminDashboardServlet extends HttpServlet {
         }
 
         Map<String, Integer> counts = adminDAO.getCountsByStatus();
+        Map<Integer, Integer> monthlyCreated = adminDAO.getMonthlyRequestCounts();
         Map<Integer, Integer> monthly = adminDAO.getMonthlyApprovedCounts();
 
+        int total = adminDAO.getRequestsCount("");
+        int openCount = adminDAO.getOpenRequestsCount();
+        int closedCount = adminDAO.getClosedRequestsCount();
+        int createdThisMonth = adminDAO.getRequestsCreatedThisMonthCount();
+        double averageResolutionDays = adminDAO.getAverageResolutionDays();
         int expiredCount = adminDAO.getExpiredRequestsCount();
         int aboutToExpireCount = adminDAO.getAboutToExpireRequestsCount();
 
         List<Solicitud> pending = adminDAO.getAllRequestsPaged("Pendiente", 1, 5);
+        List<Object[]> topTypes = adminDAO.getTopRequestTypes(5);
+        List<Object[]> topPrograms = adminDAO.getTopPrograms(5);
 
         request.setAttribute("counts", counts);
+        request.setAttribute("monthlyCreated", monthlyCreated);
         request.setAttribute("monthly", monthly);
+        request.setAttribute("total", total);
+        request.setAttribute("openCount", openCount);
+        request.setAttribute("closedCount", closedCount);
+        request.setAttribute("createdThisMonth", createdThisMonth);
+        request.setAttribute("averageResolutionDays", averageResolutionDays);
         request.setAttribute("pending", pending);
+        request.setAttribute("topTypes", topTypes);
+        request.setAttribute("topPrograms", topPrograms);
         request.setAttribute("expiredCount", expiredCount);
         request.setAttribute("aboutToExpireCount", aboutToExpireCount);
 

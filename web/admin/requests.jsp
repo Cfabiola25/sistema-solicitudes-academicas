@@ -39,6 +39,17 @@
     int currentPage = request.getAttribute("currentPage") != null ? (Integer) request.getAttribute("currentPage") : 1;
     int totalPages = request.getAttribute("totalPages") != null ? (Integer) request.getAttribute("totalPages") : 0;
     int totalRecords = request.getAttribute("totalRecords") != null ? (Integer) request.getAttribute("totalRecords") : list.size();
+    String sortBy = (String) request.getAttribute("sort");
+    if (sortBy == null || sortBy.trim().isEmpty()) {
+        sortBy = "id";
+    }
+
+    String sortDir = (String) request.getAttribute("dir");
+    if (sortDir == null || sortDir.trim().isEmpty()) {
+        sortDir = "desc";
+    }
+
+    String nextDir = "asc".equalsIgnoreCase(sortDir) ? "desc" : "asc";
 
     LocalDate today = LocalDate.now();
 %>
@@ -99,13 +110,55 @@
                 <table class="min-w-full">
                     <thead>
                     <tr class="border-b border-gray-100">
-                        <th class="pb-3 text-left text-[11px] font-bold text-gray-400 uppercase tracking-wider px-2">ID</th>
-                        <th class="pb-3 text-left text-[11px] font-bold text-gray-400 uppercase tracking-wider px-2">Estudiante</th>
-                        <th class="pb-3 text-left text-[11px] font-bold text-gray-400 uppercase tracking-wider px-2">Tipo</th>
-                        <th class="pb-3 text-left text-[11px] font-bold text-gray-400 uppercase tracking-wider px-2">Fecha</th>
-                        <th class="pb-3 text-left text-[11px] font-bold text-gray-400 uppercase tracking-wider px-2">Fecha límite</th>
-                        <th class="pb-3 text-left text-[11px] font-bold text-gray-400 uppercase tracking-wider px-2">Indicador</th>
-                        <th class="pb-3 text-left text-[11px] font-bold text-gray-400 uppercase tracking-wider px-2">Estado</th>
+                        <th class="pb-3 text-left text-[11px] font-bold uppercase tracking-wider px-2">
+                            <a class="inline-flex items-center gap-1 text-gray-400 hover:text-gray-600"
+                               href="<%=request.getContextPath()%>/admin/requests?state=<%= selectedState %>&sort=id&dir=<%= "id".equals(sortBy) ? nextDir : "asc" %>&page=1">
+                                <span>ID</span>
+                                <i class="fa-solid <%= "id".equals(sortBy) ? ("asc".equalsIgnoreCase(sortDir) ? "fa-arrow-up" : "fa-arrow-down") : "fa-sort" %>"></i>
+                            </a>
+                        </th>
+                        <th class="pb-3 text-left text-[11px] font-bold uppercase tracking-wider px-2">
+                            <a class="inline-flex items-center gap-1 text-gray-400 hover:text-gray-600"
+                               href="<%=request.getContextPath()%>/admin/requests?state=<%= selectedState %>&sort=estudiante&dir=<%= "estudiante".equals(sortBy) ? nextDir : "asc" %>&page=1">
+                                <span>Estudiante</span>
+                                <i class="fa-solid <%= "estudiante".equals(sortBy) ? ("asc".equalsIgnoreCase(sortDir) ? "fa-arrow-up" : "fa-arrow-down") : "fa-sort" %>"></i>
+                            </a>
+                        </th>
+                        <th class="pb-3 text-left text-[11px] font-bold uppercase tracking-wider px-2">
+                            <a class="inline-flex items-center gap-1 text-gray-400 hover:text-gray-600"
+                               href="<%=request.getContextPath()%>/admin/requests?state=<%= selectedState %>&sort=tipo&dir=<%= "tipo".equals(sortBy) ? nextDir : "asc" %>&page=1">
+                                <span>Tipo</span>
+                                <i class="fa-solid <%= "tipo".equals(sortBy) ? ("asc".equalsIgnoreCase(sortDir) ? "fa-arrow-up" : "fa-arrow-down") : "fa-sort" %>"></i>
+                            </a>
+                        </th>
+                        <th class="pb-3 text-left text-[11px] font-bold uppercase tracking-wider px-2">
+                            <a class="inline-flex items-center gap-1 text-gray-400 hover:text-gray-600"
+                               href="<%=request.getContextPath()%>/admin/requests?state=<%= selectedState %>&sort=fecha&dir=<%= "fecha".equals(sortBy) ? nextDir : "asc" %>&page=1">
+                                <span>Fecha</span>
+                                <i class="fa-solid <%= "fecha".equals(sortBy) ? ("asc".equalsIgnoreCase(sortDir) ? "fa-arrow-up" : "fa-arrow-down") : "fa-sort" %>"></i>
+                            </a>
+                        </th>
+                        <th class="pb-3 text-left text-[11px] font-bold uppercase tracking-wider px-2">
+                            <a class="inline-flex items-center gap-1 text-gray-400 hover:text-gray-600"
+                               href="<%=request.getContextPath()%>/admin/requests?state=<%= selectedState %>&sort=limite&dir=<%= "limite".equals(sortBy) ? nextDir : "asc" %>&page=1">
+                                <span>Fecha límite</span>
+                                <i class="fa-solid <%= "limite".equals(sortBy) ? ("asc".equalsIgnoreCase(sortDir) ? "fa-arrow-up" : "fa-arrow-down") : "fa-sort" %>"></i>
+                            </a>
+                        </th>
+                        <th class="pb-3 text-left text-[11px] font-bold uppercase tracking-wider px-2">
+                            <a class="inline-flex items-center gap-1 text-gray-400 hover:text-gray-600"
+                               href="<%=request.getContextPath()%>/admin/requests?state=<%= selectedState %>&sort=indicador&dir=<%= "indicador".equals(sortBy) ? nextDir : "asc" %>&page=1">
+                                <span>Indicador</span>
+                                <i class="fa-solid <%= "indicador".equals(sortBy) ? ("asc".equalsIgnoreCase(sortDir) ? "fa-arrow-up" : "fa-arrow-down") : "fa-sort" %>"></i>
+                            </a>
+                        </th>
+                        <th class="pb-3 text-left text-[11px] font-bold uppercase tracking-wider px-2">
+                            <a class="inline-flex items-center gap-1 text-gray-400 hover:text-gray-600"
+                               href="<%=request.getContextPath()%>/admin/requests?state=<%= selectedState %>&sort=estado&dir=<%= "estado".equals(sortBy) ? nextDir : "asc" %>&page=1">
+                                <span>Estado</span>
+                                <i class="fa-solid <%= "estado".equals(sortBy) ? ("asc".equalsIgnoreCase(sortDir) ? "fa-arrow-up" : "fa-arrow-down") : "fa-sort" %>"></i>
+                            </a>
+                        </th>
                         <th class="pb-3 text-right text-[11px] font-bold text-gray-400 uppercase tracking-wider px-2">Acción</th>
                     </tr>
                     </thead>
@@ -237,21 +290,21 @@
 
                     <div class="flex items-center gap-2">
                         <% if (currentPage > 1) { %>
-                            <a href="<%=request.getContextPath()%>/admin/requests?state=<%= selectedState %>&page=<%= currentPage - 1 %>"
+                            <a href="<%=request.getContextPath()%>/admin/requests?state=<%= selectedState %>&sort=<%= sortBy %>&dir=<%= sortDir %>&page=<%= currentPage - 1 %>"
                                class="px-3 py-2 rounded-lg border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50">
                                 Anterior
                             </a>
                         <% } %>
 
                         <% for (int i = 1; i <= totalPages; i++) { %>
-                            <a href="<%=request.getContextPath()%>/admin/requests?state=<%= selectedState %>&page=<%= i %>"
+                            <a href="<%=request.getContextPath()%>/admin/requests?state=<%= selectedState %>&sort=<%= sortBy %>&dir=<%= sortDir %>&page=<%= i %>"
                                class="px-3 py-2 rounded-lg text-sm font-bold <%= i == currentPage ? "bg-[#c8102e] text-white" : "border border-gray-200 text-gray-600 hover:bg-gray-50" %>">
                                 <%= i %>
                             </a>
                         <% } %>
 
                         <% if (currentPage < totalPages) { %>
-                            <a href="<%=request.getContextPath()%>/admin/requests?state=<%= selectedState %>&page=<%= currentPage + 1 %>"
+                            <a href="<%=request.getContextPath()%>/admin/requests?state=<%= selectedState %>&sort=<%= sortBy %>&dir=<%= sortDir %>&page=<%= currentPage + 1 %>"
                                class="px-3 py-2 rounded-lg border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50">
                                 Siguiente
                             </a>

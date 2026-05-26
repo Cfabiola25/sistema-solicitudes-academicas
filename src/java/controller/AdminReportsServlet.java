@@ -30,27 +30,49 @@ public class AdminReportsServlet extends HttpServlet {
         }
 
         Map<String, Integer> counts = adminDAO.getCountsByStatus();
+        Map<Integer, Integer> monthlyCreated = adminDAO.getMonthlyRequestCounts();
         Map<Integer, Integer> monthly = adminDAO.getMonthlyApprovedCounts();
 
         int total = calculateTotal(counts);
+        int open = adminDAO.getOpenRequestsCount();
+        int closed = adminDAO.getClosedRequestsCount();
+        int createdThisMonth = adminDAO.getRequestsCreatedThisMonthCount();
         int sent = counts.getOrDefault("Enviada", 0);
         int pending = counts.getOrDefault("Pendiente", 0);
         int approved = counts.getOrDefault("Aprobada", 0);
         int rejected = counts.getOrDefault("Rechazada", 0);
+        int expired = adminDAO.getExpiredRequestsCount();
+        int aboutToExpire = adminDAO.getAboutToExpireRequestsCount();
 
         double approvalRate = total > 0 ? (approved * 100.0 / total) : 0.0;
+        double averageResolutionDays = adminDAO.getAverageResolutionDays();
 
         List<Solicitud> recent = adminDAO.getAllRequestsPaged("", 1, 8);
+        List<Solicitud> closedRecent = adminDAO.getAllRequestsPaged("Cerrada", 1, 8);
+        List<Solicitud> urgent = adminDAO.getAllRequestsPaged("Vencidas", 1, 6);
+        List<Object[]> topTypes = adminDAO.getTopRequestTypes(7);
+        List<Object[]> topPrograms = adminDAO.getTopPrograms(7);
 
         request.setAttribute("counts", counts);
+        request.setAttribute("monthlyCreated", monthlyCreated);
         request.setAttribute("monthly", monthly);
         request.setAttribute("recent", recent);
+        request.setAttribute("closedRecent", closedRecent);
+        request.setAttribute("urgent", urgent);
         request.setAttribute("total", total);
+        request.setAttribute("open", open);
+        request.setAttribute("closed", closed);
+        request.setAttribute("createdThisMonth", createdThisMonth);
         request.setAttribute("sent", sent);
         request.setAttribute("pending", pending);
         request.setAttribute("approved", approved);
         request.setAttribute("rejected", rejected);
+        request.setAttribute("expired", expired);
+        request.setAttribute("aboutToExpire", aboutToExpire);
         request.setAttribute("approvalRate", approvalRate);
+        request.setAttribute("averageResolutionDays", averageResolutionDays);
+        request.setAttribute("topTypes", topTypes);
+        request.setAttribute("topPrograms", topPrograms);
 
         request.getRequestDispatcher("/admin/reports.jsp").forward(request, response);
     }

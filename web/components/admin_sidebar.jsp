@@ -11,7 +11,23 @@
         activePage = "";
     }
 %>
-<aside class="w-[210px] bg-white border-r border-gray-100 flex flex-col justify-between py-6 px-4 fixed h-full z-10">
+<style>
+    @media (max-width: 767px) {
+        main[class*="ml-[210px]"] { margin-left: 0 !important; }
+        .sidebar-drawer { transform: translateX(-100%); }
+        .sidebar-drawer.is-open { transform: translateX(0); }
+        .sidebar-backdrop { display: none; }
+        .sidebar-backdrop.is-open { display: block; }
+    }
+</style>
+
+<button type="button" id="adminSidebarToggle" aria-label="Abrir menú" class="md:hidden fixed top-4 left-4 z-[60] w-11 h-11 rounded-xl bg-white border border-gray-200 shadow-sm flex items-center justify-center text-gray-700">
+    <i class="fa-solid fa-bars"></i>
+</button>
+
+<div id="adminSidebarBackdrop" class="sidebar-backdrop fixed inset-0 bg-black/40 z-40 md:hidden"></div>
+
+<aside id="adminSidebar" class="sidebar-drawer w-[210px] bg-white border-r border-gray-100 flex flex-col justify-between py-6 px-4 fixed inset-y-0 left-0 z-50 h-full transition-transform duration-300 ease-out md:translate-x-0">
     <div>
         <div class="px-2 mb-8 flex justify-start">
             <img src="<%=request.getContextPath()%>/assets/images/logo-fesc.png"
@@ -37,7 +53,7 @@
         <nav class="flex flex-col gap-1">
             <a href="<%=request.getContextPath()%>/admin/dashboard"
                class="nav-link <%= "dashboard".equals(activePage) ? "active flex items-center gap-3 px-3 py-2.5 text-sm font-semibold text-white transition-all" : "flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-500 transition-all" %>">
-                <i class="fa-solid fa-table-columns text-sm w-4 text-center <%= "dashboard".equals(activePage) ? "" : "text-gray-400" %>"></i> Tablero
+                <i class="fa-solid fa-table-columns text-sm w-4 text-center <%= "dashboard".equals(activePage) ? "" : "text-gray-400" %>"></i> Dashboard
             </a>
 
             <a href="<%=request.getContextPath()%>/admin/requests"
@@ -82,3 +98,47 @@
         <i class="fa-solid fa-arrow-right-from-bracket text-sm w-4 text-center"></i> Cerrar sesión
     </a>
 </aside>
+
+<script>
+    (function () {
+        const toggle = document.getElementById('adminSidebarToggle');
+        const sidebar = document.getElementById('adminSidebar');
+        const backdrop = document.getElementById('adminSidebarBackdrop');
+
+        if (!toggle || !sidebar || !backdrop) return;
+
+        const open = () => {
+            sidebar.classList.add('is-open');
+            backdrop.classList.add('is-open');
+            document.body.style.overflow = 'hidden';
+        };
+
+        const close = () => {
+            sidebar.classList.remove('is-open');
+            backdrop.classList.remove('is-open');
+            document.body.style.overflow = '';
+        };
+
+        toggle.addEventListener('click', () => {
+            if (sidebar.classList.contains('is-open')) {
+                close();
+            } else {
+                open();
+            }
+        });
+
+        backdrop.addEventListener('click', close);
+
+        sidebar.querySelectorAll('a').forEach((link) => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth < 768) close();
+            });
+        });
+
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 768) {
+                close();
+            }
+        });
+    })();
+</script>

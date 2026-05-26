@@ -67,7 +67,7 @@
             <a href="<%=request.getContextPath()%>/admin/dashboard"
                class="inline-flex items-center gap-2 rounded-xl bg-[#c8102e] px-5 py-3 text-sm font-bold text-white hover:bg-red-700 transition-colors">
                 <i class="fa-solid fa-table-columns"></i>
-                Ir al tablero
+                Ir al Dashboard
             </a>
         </div>
 

@@ -36,6 +36,16 @@ public class AdminRequestsServlet extends HttpServlet {
 
         String state = clean(request.getParameter("state"));
         int page = getPage(request);
+        String sort = clean(request.getParameter("sort"));
+        String dir = clean(request.getParameter("dir"));
+
+        if (sort.isEmpty()) {
+            sort = "id";
+        }
+
+        if (!"asc".equalsIgnoreCase(dir) && !"desc".equalsIgnoreCase(dir)) {
+            dir = "desc";
+        }
 
         int totalRecords;
 
@@ -65,13 +75,15 @@ public class AdminRequestsServlet extends HttpServlet {
         List<Solicitud> list;
 
         if (isSuper) {
-            list = adminDAO.getAllRequestsPaged(state, page, PAGE_SIZE);
+            list = adminDAO.getAllRequestsPaged(state, page, PAGE_SIZE, sort, dir);
         } else {
-            list = adminDAO.getRequestsForAdminPaged(state, adminId, page, PAGE_SIZE);
+            list = adminDAO.getRequestsForAdminPaged(state, adminId, page, PAGE_SIZE, sort, dir);
         }
 
         request.setAttribute("list", list);
         request.setAttribute("selectedState", state);
+        request.setAttribute("sort", sort);
+        request.setAttribute("dir", dir.toLowerCase());
         request.setAttribute("currentPage", page);
         request.setAttribute("totalPages", totalPages);
         request.setAttribute("totalRecords", totalRecords);

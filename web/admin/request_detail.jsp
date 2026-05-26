@@ -287,9 +287,18 @@
                                 Adjuntar archivo
                             </label>
 
+                            <div id="adminChatDropzone" class="border-2 border-dashed border-gray-200 rounded-2xl p-5 text-center cursor-pointer hover:border-[#c8102e] hover:bg-red-50/50 transition-all duration-200 bg-white">
+                                <i class="fa-solid fa-cloud-arrow-up text-[#c8102e] text-2xl mb-2"></i>
+                                <p class="text-sm font-semibold text-gray-700">Arrastra un archivo o haz clic aquí</p>
+                                <p class="text-xs text-gray-400 mt-1">Soportado: PDF, DOCX, JPG, JPEG, PNG y WEBP</p>
+                                <p id="adminChatFileLabel" class="text-xs font-semibold text-[#c8102e] mt-3 hidden"></p>
+                            </div>
+
                             <input type="file"
                                    name="archivo"
-                                   class="w-full text-xs border border-gray-200 rounded-lg px-3 py-2 bg-white">
+                                   id="adminChatFileInput"
+                                   accept=".pdf,.docx,.jpg,.jpeg,.png,.webp"
+                                   class="hidden">
                         </div>
                     </form>
                 </div>
@@ -364,6 +373,49 @@
         </div>
     </footer>
 </main>
+
+<script>
+    (function () {
+        const dropzone = document.getElementById('adminChatDropzone');
+        const fileInput = document.getElementById('adminChatFileInput');
+        const fileLabel = document.getElementById('adminChatFileLabel');
+
+        if (!dropzone || !fileInput || !fileLabel) return;
+
+        const updateLabel = () => {
+            if (fileInput.files && fileInput.files.length > 0) {
+                fileLabel.textContent = fileInput.files[0].name;
+                fileLabel.classList.remove('hidden');
+            } else {
+                fileLabel.textContent = '';
+                fileLabel.classList.add('hidden');
+            }
+        };
+
+        dropzone.addEventListener('click', () => fileInput.click());
+        dropzone.addEventListener('dragover', (event) => {
+            event.preventDefault();
+            dropzone.classList.add('border-[#c8102e]', 'bg-red-50/60');
+        });
+        dropzone.addEventListener('dragenter', (event) => {
+            event.preventDefault();
+            dropzone.classList.add('border-[#c8102e]', 'bg-red-50/60');
+        });
+        dropzone.addEventListener('dragleave', (event) => {
+            event.preventDefault();
+            dropzone.classList.remove('border-[#c8102e]', 'bg-red-50/60');
+        });
+        dropzone.addEventListener('drop', (event) => {
+            event.preventDefault();
+            dropzone.classList.remove('border-[#c8102e]', 'bg-red-50/60');
+            if (event.dataTransfer.files.length > 0) {
+                fileInput.files = event.dataTransfer.files;
+                updateLabel();
+            }
+        });
+        fileInput.addEventListener('change', updateLabel);
+    })();
+</script>
 
 </body>
 </html>

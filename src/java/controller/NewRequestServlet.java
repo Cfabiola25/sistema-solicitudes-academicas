@@ -49,6 +49,8 @@ public class NewRequestServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        request.setCharacterEncoding("UTF-8");
+
         HttpSession session = request.getSession(false);
 
         if (!isStudentSession(session)) {
@@ -77,6 +79,9 @@ public class NewRequestServlet extends HttpServlet {
             documentoPath = saveUploadedFile(request);
         } catch (ServletException e) {
             forwardWithError(request, response, e.getMessage());
+            return;
+        } catch (RuntimeException e) {
+            forwardWithError(request, response, "No se pudo procesar el archivo adjunto.");
             return;
         }
 
@@ -151,7 +156,12 @@ public class NewRequestServlet extends HttpServlet {
 
         String safeFileName = buildSafeFileName(submittedName);
 
-        String uploadsDir = getServletContext().getRealPath("") + File.separator + "uploads";
+        String uploadsDir = getServletContext().getRealPath("/uploads");
+
+        if (uploadsDir == null) {
+            throw new ServletException("No se pudo resolver la carpeta de archivos adjuntos.");
+        }
+
         File uploads = new File(uploadsDir);
 
         if (!uploads.exists()) {

@@ -45,6 +45,13 @@
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
             <div class="xl:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                 <h2 class="text-2xl font-extrabold text-gray-900 mb-6">Formulario de solicitud</h2>
+
+                <% String error = (String) request.getAttribute("error"); %>
+                <% if (error != null && !error.trim().isEmpty()) { %>
+                    <div class="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+                        <i class="fa-solid fa-triangle-exclamation mr-2"></i><%= error %>
+                    </div>
+                <% } %>
                 
                 <form action="<%=request.getContextPath()%>/student/new-request" method="post" enctype="multipart/form-data" class="space-y-6">
                     <div>
@@ -67,10 +74,11 @@
 
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">Documento adjunto</label>
-                        <div class="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center cursor-pointer hover:border-[#c8102e] hover:bg-red-50/50 transition-colors" onclick="document.getElementById('fileInput').click();">
+                        <div id="dropzone" class="border-2 border-dashed border-gray-200 rounded-2xl p-6 text-center cursor-pointer hover:border-[#c8102e] hover:bg-red-50/50 transition-all duration-200">
                             <i class="fa-solid fa-cloud-arrow-up text-[#c8102e] text-3xl mb-2"></i>
                             <p class="text-sm font-semibold text-gray-700">Arrastra un archivo o haz clic aquí</p>
                             <p class="text-xs text-gray-400 mt-1">Soportado: PDF, máx 10 MB</p>
+                            <p id="fileLabel" class="text-xs font-semibold text-[#c8102e] mt-3 hidden"></p>
                         </div>
                         <input type="file" name="documento" id="fileInput" class="hidden" accept=".pdf" />
                     </div>
@@ -106,5 +114,48 @@
         </div>
     </div>
 </main>
+
+<script>
+    (function () {
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('fileInput');
+        const fileLabel = document.getElementById('fileLabel');
+
+        if (!dropzone || !fileInput || !fileLabel) return;
+
+        const updateLabel = () => {
+            if (fileInput.files && fileInput.files.length > 0) {
+                fileLabel.textContent = fileInput.files[0].name;
+                fileLabel.classList.remove('hidden');
+            } else {
+                fileLabel.textContent = '';
+                fileLabel.classList.add('hidden');
+            }
+        };
+
+        dropzone.addEventListener('click', () => fileInput.click());
+        dropzone.addEventListener('dragover', (event) => {
+            event.preventDefault();
+            dropzone.classList.add('border-[#c8102e]', 'bg-red-50/60');
+        });
+        dropzone.addEventListener('dragenter', (event) => {
+            event.preventDefault();
+            dropzone.classList.add('border-[#c8102e]', 'bg-red-50/60');
+        });
+        dropzone.addEventListener('dragleave', (event) => {
+            event.preventDefault();
+            dropzone.classList.remove('border-[#c8102e]', 'bg-red-50/60');
+        });
+        dropzone.addEventListener('drop', (event) => {
+            event.preventDefault();
+            dropzone.classList.remove('border-[#c8102e]', 'bg-red-50/60');
+            if (event.dataTransfer.files.length > 0) {
+                fileInput.files = event.dataTransfer.files;
+                updateLabel();
+            }
+        });
+        fileInput.addEventListener('change', updateLabel);
+    })();
+</script>
 </body>
 </html>

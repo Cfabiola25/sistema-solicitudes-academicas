@@ -12,6 +12,8 @@ import javax.servlet.http.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Shows detailed information about a specific request for a student.
@@ -53,6 +55,12 @@ public class RequestDetailServlet extends HttpServlet {
             return;
         }
 
+        String error = request.getParameter("error");
+
+        if (error != null && !error.trim().isEmpty()) {
+            request.setAttribute("error", error);
+        }
+
         request.setAttribute("solicitud", solicitud);
         request.setAttribute("mensajes", mensajeDAO.getBySolicitudId(solicitud.getId()));
         request.getRequestDispatcher("/student/request_detail.jsp").forward(request, response);
@@ -85,7 +93,17 @@ public class RequestDetailServlet extends HttpServlet {
             return;
         }
 
-        String archivoPath = saveUploadedFile(request);
+        String archivoPath;
+
+        try {
+            archivoPath = saveUploadedFile(request);
+        } catch (ServletException e) {
+            redirectWithError(request, response, id, e.getMessage());
+            return;
+        } catch (RuntimeException e) {
+            redirectWithError(request, response, id, "No se pudo procesar el archivo adjunto.");
+            return;
+        }
 
         if (mensaje.isEmpty() && archivoPath == null) {
             response.sendRedirect(request.getContextPath() + "/student/request-detail?id=" + id);
@@ -115,7 +133,12 @@ public class RequestDetailServlet extends HttpServlet {
         String safeFileName = System.currentTimeMillis() + "_" +
                 submittedName.replaceAll("[^a-zA-Z0-9._-]", "_");
 
-        String uploadsDir = getServletContext().getRealPath("") + File.separator + "uploads" + File.separator + "messages";
+        String uploadsDir = getServletContext().getRealPath("/uploads/messages");
+
+        if (uploadsDir == null) {
+            throw new ServletException("No se pudo resolver la carpeta de archivos adjuntos.");
+        }
+
         File uploads = new File(uploadsDir);
 
         if (!uploads.exists()) {
@@ -126,6 +149,12 @@ public class RequestDetailServlet extends HttpServlet {
         filePart.write(file.getAbsolutePath());
 
         return "uploads/messages/" + safeFileName;
+    }
+
+    private void redirectWithError(HttpServletRequest request, HttpServletResponse response, int id, String error)
+            throws IOException {
+        String encoded = URLEncoder.encode(error, StandardCharsets.UTF_8);
+        response.sendRedirect(request.getContextPath() + "/student/request-detail?id=" + id + "&error=" + encoded);
     }
 
     private boolean isStudentSession(HttpSession session) {

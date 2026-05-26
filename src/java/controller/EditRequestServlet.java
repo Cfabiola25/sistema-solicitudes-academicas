@@ -131,7 +131,12 @@ public class EditRequestServlet extends HttpServlet {
 
         String safeFileName = buildSafeFileName(submittedName);
 
-        String uploadsDir = getServletContext().getRealPath("") + File.separator + "uploads";
+        String uploadsDir = getServletContext().getRealPath("/uploads");
+
+        if (uploadsDir == null) {
+            throw new ServletException("No se pudo resolver la carpeta de archivos adjuntos.");
+        }
+
         File uploads = new File(uploadsDir);
 
         if (!uploads.exists()) {
