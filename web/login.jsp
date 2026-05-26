@@ -144,9 +144,10 @@
 
     <div class="mt-8 text-center text-sm text-gray-500">
         ¿Eres nuevo en la plataforma?
+        <br>
         <a href="<%=request.getContextPath()%>/register"
            class="text-[#c8102e] font-bold hover:underline">
-            Solicitar acceso
+            Registrarse
         </a>
     </div>
 </div>

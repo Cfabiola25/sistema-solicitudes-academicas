@@ -56,88 +56,9 @@
     String state = sol != null ? sol.getEstado() : "";
 %>
 
-<aside class="w-[210px] bg-white border-r border-gray-100 flex flex-col justify-between py-6 px-4 fixed h-full z-10">
-    <div>
-
-        <div class="px-2 mb-8 flex justify-start">
-            <img src="<%=request.getContextPath()%>/assets/images/logo-fesc.png"
-                 alt="FESC Logo"
-                 class="h-10 object-contain"
-                 onerror="this.outerHTML='<div class=\'flex items-center gap-2\'><div class=\'w-8 h-8 rounded-lg bg-[#c8102e] flex items-center justify-center\'><i class=\'fa-solid fa-graduation-cap text-white text-sm\'></i></div><span class=\'font-extrabold text-[#c8102e] text-lg tracking-tight\'>FESC Gestión</span></div>'">
-        </div>
-
-        <div class="flex items-center gap-3 bg-gray-50 rounded-xl p-3 mb-6">
-            <div class="w-8 h-8 rounded-full bg-[#c8102e]/10 flex items-center justify-center">
-                <i class="fa-solid fa-user-tie text-[#c8102e] text-xs"></i>
-            </div>
-
-            <div>
-                <p class="text-xs font-bold text-gray-800 leading-none">
-                    Administración
-                </p>
-                <p class="text-[10px] text-gray-400 mt-0.5">
-                    Gestión de solicitudes
-                </p>
-            </div>
-        </div>
-
-        <nav class="flex flex-col gap-1">
-
-            <a href="<%=request.getContextPath()%>/admin/dashboard"
-               class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-500 transition-all">
-                <i class="fa-solid fa-table-columns text-sm w-4 text-center text-gray-400"></i>
-                Tablero
-            </a>
-
-            <a href="<%=request.getContextPath()%>/admin/requests"
-               class="nav-link active flex items-center gap-3 px-3 py-2.5 text-sm font-semibold text-white transition-all">
-                <i class="fa-regular fa-folder-open text-sm w-4 text-center"></i>
-                Solicitudes
-            </a>
-
-            <a href="<%=request.getContextPath()%>/admin/students"
-               class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-500 transition-all">
-                <i class="fa-solid fa-user-graduate text-sm w-4 text-center text-gray-400"></i>
-                Estudiantes
-            </a>
-
-            <a href="<%=request.getContextPath()%>/admin/admin-users"
-               class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-500 transition-all">
-                <i class="fa-solid fa-users-gear text-sm w-4 text-center text-gray-400"></i>
-                Administradores
-            </a>
-
-            <a href="<%=request.getContextPath()%>/admin/programs"
-               class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-500 transition-all">
-                <i class="fa-solid fa-graduation-cap text-sm w-4 text-center text-gray-400"></i>
-                Programas
-            </a>
-
-            <a href="<%=request.getContextPath()%>/admin/request-types"
-               class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-500 transition-all">
-                <i class="fa-solid fa-sliders text-sm w-4 text-center text-gray-400"></i>
-                Tipos Solicitud
-            </a>
-
-            <a href="<%=request.getContextPath()%>/admin/reports"
-               class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-500 transition-all">
-                <i class="fa-regular fa-chart-bar text-sm w-4 text-center text-gray-400"></i>
-                Reportes
-            </a>
-            <a href="<%=request.getContextPath()%>/admin/profile"
-                class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-500 transition-all">
-                 <i class="fa-solid fa-user text-sm w-4 text-center text-gray-400"></i>
-                 Mi Perfil
-             </a>               
-        </nav>
-    </div>
-
-    <a href="<%=request.getContextPath()%>/logout"
-       class="flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-gray-400 hover:text-[#c8102e] transition-colors rounded-xl hover:bg-red-50">
-        <i class="fa-solid fa-arrow-right-from-bracket text-sm w-4 text-center"></i>
-        Cerrar sesión
-    </a>
-</aside>
+<jsp:include page="/components/admin_sidebar.jsp">
+    <jsp:param name="activePage" value="requests" />
+</jsp:include>
 
 <main class="flex-1 ml-[210px] min-h-screen flex flex-col">
 
@@ -180,6 +101,10 @@
             <% } else if ("Rechazada".equals(state)) { %>
                 <span class="px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-lg bg-red-50 text-red-600 border border-red-100 flex items-center gap-2 shadow-sm">
                     <i class="fa-solid fa-xmark"></i> Rechazada
+                </span>
+            <% } else if ("Anulada".equals(state)) { %>
+                <span class="px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-lg bg-gray-100 text-gray-600 border border-gray-200 flex items-center gap-2 shadow-sm">
+                    <i class="fa-solid fa-ban"></i> Anulada
                 </span>
             <% } else { %>
                 <span class="px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-lg bg-blue-50 text-blue-600 border border-blue-100 flex items-center gap-2 shadow-sm">
@@ -369,7 +294,7 @@
                     </form>
                 </div>
 
-                <% if (!"Aprobada".equals(sol.getEstado()) && !"Rechazada".equals(sol.getEstado())) { %>
+                <% if (!"Aprobada".equals(sol.getEstado()) && !"Rechazada".equals(sol.getEstado()) && !"Anulada".equals(sol.getEstado())) { %>
                     <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
                         <h3 class="font-bold text-gray-800 mb-4">
                             <i class="fa-solid fa-gavel text-[#c8102e] mr-2"></i>
@@ -409,6 +334,14 @@
                                         class="w-full bg-white text-[#c8102e] border-2 border-[#c8102e] font-bold py-1.5 rounded-lg hover:bg-red-50 transition-colors flex justify-center items-center gap-2 text-sm">
                                     <i class="fa-solid fa-xmark"></i>
                                     Rechazar
+                                </button>
+
+                                <button type="submit"
+                                        name="newState"
+                                        value="Anulada"
+                                        class="w-full bg-gray-100 text-gray-700 border-2 border-gray-200 font-bold py-1.5 rounded-lg hover:bg-gray-200 transition-colors flex justify-center items-center gap-2 text-sm">
+                                    <i class="fa-solid fa-ban"></i>
+                                    Anular
                                 </button>
                             </div>
                         </form>

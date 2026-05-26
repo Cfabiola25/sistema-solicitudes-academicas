@@ -59,7 +59,7 @@
                 <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Correo Institucional *</label>
                 <div class="relative">
                     <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400"><i class="fa-regular fa-envelope"></i></span>
-                    <input type="email" name="email" required placeholder="juan.perez@example.com" 
+                    <input type="email" name="email" required placeholder="juan.perez@fesc.edu.co" 
                            class="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#c8102e]/30 focus:bg-white transition-colors" />
                 </div>
             </div>

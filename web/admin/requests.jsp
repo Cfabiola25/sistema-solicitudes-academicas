@@ -43,101 +43,9 @@
     LocalDate today = LocalDate.now();
 %>
 
-<aside class="w-[210px] bg-white border-r border-gray-100 flex flex-col justify-between py-6 px-4 fixed h-full z-10">
-    <div>
-        
-        <!-- Logo -->
-        <div class="px-2 mb-8 flex justify-start">
-            <img src="<%=request.getContextPath()%>/assets/images/logo-fesc.png"
-                 alt="FESC Logo"
-                 class="h-10 object-contain"
-                 onerror="this.outerHTML='<div class=\'flex items-center gap-2\'><div class=\'w-8 h-8 rounded-lg bg-[#c8102e] flex items-center justify-center\'><i class=\'fa-solid fa-graduation-cap text-white text-sm\'></i></div><span class=\'font-extrabold text-[#c8102e] text-lg tracking-tight\'>FESC Gestión</span></div>'">
-        </div>
-
-        <!-- User Info -->
-        <div class="flex items-center gap-3 bg-gray-50 rounded-xl p-3 mb-6">
-            <div class="w-8 h-8 rounded-full bg-[#c8102e]/10 flex items-center justify-center">
-                <i class="fa-solid fa-user-tie text-[#c8102e] text-xs"></i>
-            </div>
-
-            <div>
-                <p class="text-xs font-bold text-gray-800 leading-none">
-                    Administración
-                </p>
-
-                <p class="text-[10px] text-gray-400 mt-0.5">
-                    Panel Central
-                </p>
-            </div>
-        </div>
-
-        <!-- Navigation -->
-        <nav class="flex flex-col gap-1">
-
-            <!-- Dashboard -->
-            <a href="<%=request.getContextPath()%>/admin/dashboard"
-               class="nav-link active flex items-center gap-3 px-3 py-2.5 text-sm font-semibold text-white transition-all">
-                <i class="fa-solid fa-table-columns text-sm w-4 text-center"></i>
-                Tablero
-            </a>
-
-            <!-- Requests -->
-            <a href="<%=request.getContextPath()%>/admin/requests"
-               class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-500 transition-all">
-                <i class="fa-regular fa-folder-open text-sm w-4 text-center text-gray-400"></i>
-                Solicitudes
-            </a>
-
-            <!-- Students -->
-            <a href="<%=request.getContextPath()%>/admin/students"
-               class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-500 transition-all">
-                <i class="fa-solid fa-user-graduate text-sm w-4 text-center text-gray-400"></i>
-                Estudiantes
-            </a>
-
-            <!-- Admin Users -->
-            <a href="<%=request.getContextPath()%>/admin/admin-users"
-               class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-500 transition-all">
-                <i class="fa-solid fa-users-gear text-sm w-4 text-center text-gray-400"></i>
-                Administradores
-            </a>
-
-            <!-- Academic Programs -->
-            <a href="<%=request.getContextPath()%>/admin/programs"
-               class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-500 transition-all">
-                <i class="fa-solid fa-graduation-cap text-sm w-4 text-center text-gray-400"></i>
-                Programas
-            </a>
-
-            <!-- Request Types -->
-            <a href="<%=request.getContextPath()%>/admin/request-types"
-               class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-500 transition-all">
-                <i class="fa-solid fa-sliders text-sm w-4 text-center text-gray-400"></i>
-                Tipos Solicitud
-            </a>
-
-            <!-- Reports -->
-            <a href="<%=request.getContextPath()%>/admin/reports"
-               class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-500 transition-all">
-                <i class="fa-regular fa-chart-bar text-sm w-4 text-center text-gray-400"></i>
-                Reportes
-            </a>
-               
-            <a href="<%=request.getContextPath()%>/admin/profile"
-                class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-500 transition-all">
-                 <i class="fa-solid fa-user text-sm w-4 text-center text-gray-400"></i>
-                 Mi Perfil
-             </a>
-        </nav>
-    </div>
-
-    <!-- Logout -->
-    <a href="<%=request.getContextPath()%>/logout"
-       class="flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-gray-400 hover:text-[#c8102e] transition-colors rounded-xl hover:bg-red-50">
-        <i class="fa-solid fa-arrow-right-from-bracket text-sm w-4 text-center"></i>
-        Cerrar sesión
-    </a>
-</aside>
+<jsp:include page="/components/admin_sidebar.jsp">
+    <jsp:param name="activePage" value="requests" />
+</jsp:include>
 
 <main class="flex-1 ml-[210px] min-h-screen flex flex-col">
 
@@ -196,7 +104,7 @@
                         <th class="pb-3 text-left text-[11px] font-bold text-gray-400 uppercase tracking-wider px-2">Tipo</th>
                         <th class="pb-3 text-left text-[11px] font-bold text-gray-400 uppercase tracking-wider px-2">Fecha</th>
                         <th class="pb-3 text-left text-[11px] font-bold text-gray-400 uppercase tracking-wider px-2">Fecha límite</th>
-                        <th class="pb-3 text-left text-[11px] font-bold text-gray-400 uppercase tracking-wider px-2">Semáforo</th>
+                        <th class="pb-3 text-left text-[11px] font-bold text-gray-400 uppercase tracking-wider px-2">Indicador</th>
                         <th class="pb-3 text-left text-[11px] font-bold text-gray-400 uppercase tracking-wider px-2">Estado</th>
                         <th class="pb-3 text-right text-[11px] font-bold text-gray-400 uppercase tracking-wider px-2">Acción</th>
                     </tr>
@@ -215,28 +123,32 @@
                         <%
                             String estado = sol.getEstado();
 
-                            boolean cerrada = "Aprobada".equals(estado) || "Rechazada".equals(estado);
+                            boolean cerrada = "Aprobada".equals(estado) || "Rechazada".equals(estado) || "Anulada".equals(estado);
 
-                            String semaforoClass = "bg-green-50 text-green-600 border-green-100";
-                            String semaforoIcon = "fa-circle-check";
-                            String semaforoText = "En tiempo";
+                            String indicadorClass = "bg-green-50 text-green-600 border-green-100";
+                            String indicadorIcon = "fa-circle-check";
+                            String indicadorText = "En tiempo";
 
                             if (!cerrada && sol.getFechaLimite() != null) {
                                 LocalDate limite = sol.getFechaLimite().toLocalDate();
 
                                 if (limite.isBefore(today)) {
-                                    semaforoClass = "bg-red-50 text-red-600 border-red-100";
-                                    semaforoIcon = "fa-triangle-exclamation";
-                                    semaforoText = "Vencida";
+                                    indicadorClass = "bg-red-50 text-red-600 border-red-100";
+                                    indicadorIcon = "fa-triangle-exclamation";
+                                    indicadorText = "Vencida";
                                 } else if (!limite.isAfter(today.plusDays(2))) {
-                                    semaforoClass = "bg-amber-50 text-amber-600 border-amber-100";
-                                    semaforoIcon = "fa-clock";
-                                    semaforoText = "Por vencer";
+                                    indicadorClass = "bg-amber-50 text-amber-600 border-amber-100";
+                                    indicadorIcon = "fa-clock";
+                                    indicadorText = "Por vencer";
                                 }
+                            } else if ("Anulada".equals(estado)) {
+                                indicadorClass = "bg-gray-100 text-gray-500 border-gray-200";
+                                indicadorIcon = "fa-ban";
+                                indicadorText = "Anulada";
                             } else if (cerrada) {
-                                semaforoClass = "bg-gray-100 text-gray-500 border-gray-200";
-                                semaforoIcon = "fa-lock";
-                                semaforoText = "Cerrada";
+                                indicadorClass = "bg-gray-100 text-gray-500 border-gray-200";
+                                indicadorIcon = "fa-lock";
+                                indicadorText = "Cerrada";
                             }
                         %>
 
@@ -269,9 +181,9 @@
                             </td>
 
                             <td class="py-4 px-2 text-sm">
-                                <span class="inline-flex items-center rounded-lg px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider border <%= semaforoClass %>">
-                                    <i class="fa-solid <%= semaforoIcon %> mr-1"></i>
-                                    <%= semaforoText %>
+                                <span class="inline-flex items-center rounded-lg px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider border <%= indicadorClass %>">
+                                    <i class="fa-solid <%= indicadorIcon %> mr-1"></i>
+                                    <%= indicadorText %>
                                 </span>
                             </td>
 
@@ -287,6 +199,10 @@
                                 <% } else if ("Rechazada".equals(estado)) { %>
                                     <span class="px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider rounded-lg bg-red-50 text-red-600 border border-red-100">
                                         <i class="fa-solid fa-xmark mr-1"></i> <%= estado %>
+                                    </span>
+                                <% } else if ("Anulada".equals(estado)) { %>
+                                    <span class="px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider rounded-lg bg-gray-100 text-gray-600 border border-gray-200">
+                                        <i class="fa-solid fa-ban mr-1"></i> <%= estado %>
                                     </span>
                                 <% } else if ("Enviada".equals(estado)) { %>
                                     <span class="px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider rounded-lg bg-blue-50 text-blue-600 border border-blue-100">
