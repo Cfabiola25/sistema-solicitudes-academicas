@@ -357,6 +357,7 @@ public class AdminDAO {
         List<Object> params = new ArrayList<>();
         applyFilterSql(sql, filter, params);
 
+        // Only show requests assigned to this admin (responsable_id = ?)
         if (params.isEmpty()) {
             sql.append(" WHERE s.responsable_id = ?");
         } else {
@@ -512,6 +513,7 @@ public class AdminDAO {
 
         applyFilterSql(sql, filter, params);
 
+        // When counting for an admin, only include requests assigned to them
         if (params.isEmpty()) {
             sql.append(" WHERE s.responsable_id = ?");
         } else {
