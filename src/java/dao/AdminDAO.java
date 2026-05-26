@@ -182,6 +182,123 @@ public class AdminDAO {
         return counts;
     }
 
+    public Map<Integer, Integer> getMonthlyRequestCounts() {
+        Map<Integer, Integer> counts = new HashMap<>();
+
+        String sql = "SELECT MONTH(fecha_solicitud) AS mes, COUNT(*) AS total " +
+                "FROM solicitud " +
+                "WHERE YEAR(fecha_solicitud) = YEAR(CURDATE()) " +
+                "GROUP BY mes";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                counts.put(rs.getInt("mes"), rs.getInt("total"));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return counts;
+    }
+
+    public List<Object[]> getTopRequestTypes(int limit) {
+        List<Object[]> list = new ArrayList<>();
+
+        String sql = "SELECT ts.nombre AS label, COUNT(*) AS total " +
+                "FROM solicitud s " +
+                "INNER JOIN tipo_solicitud ts ON s.tipo_solicitud_id = ts.id " +
+                "GROUP BY ts.id, ts.nombre " +
+                "ORDER BY total DESC, ts.nombre ASC " +
+                "LIMIT ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, Math.max(limit, 1));
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(new Object[]{rs.getString("label"), rs.getInt("total")});
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
+    public List<Object[]> getTopPrograms(int limit) {
+        List<Object[]> list = new ArrayList<>();
+
+        String sql = "SELECT p.nombre AS label, COUNT(*) AS total " +
+                "FROM solicitud s " +
+                "INNER JOIN estudiante e ON s.estudiante_id = e.id " +
+                "INNER JOIN programa_academico p ON e.programa_id = p.id " +
+                "GROUP BY p.id, p.nombre " +
+                "ORDER BY total DESC, p.nombre ASC " +
+                "LIMIT ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, Math.max(limit, 1));
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(new Object[]{rs.getString("label"), rs.getInt("total")});
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
+    public int getOpenRequestsCount() {
+        String sql = "SELECT COUNT(*) FROM solicitud WHERE estado IN ('Enviada', 'Pendiente')";
+        return getSingleInt(sql);
+    }
+
+    public int getClosedRequestsCount() {
+        String sql = "SELECT COUNT(*) FROM solicitud WHERE estado IN ('Aprobada', 'Rechazada', 'Anulada')";
+        return getSingleInt(sql);
+    }
+
+    public int getRequestsCreatedThisMonthCount() {
+        String sql = "SELECT COUNT(*) FROM solicitud " +
+                "WHERE YEAR(fecha_solicitud) = YEAR(CURDATE()) " +
+                "AND MONTH(fecha_solicitud) = MONTH(CURDATE())";
+        return getSingleInt(sql);
+    }
+
+    public double getAverageResolutionDays() {
+        String sql = "SELECT AVG(TIMESTAMPDIFF(DAY, fecha_solicitud, fecha_respuesta)) " +
+                "FROM solicitud WHERE fecha_respuesta IS NOT NULL";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            if (rs.next()) {
+                double value = rs.getDouble(1);
+                return rs.wasNull() ? 0.0 : value;
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return 0.0;
+    }
+
     private void applyFilterSql(StringBuilder sql, String filter, List<Object> params) {
         if (filter == null || filter.trim().isEmpty()) {
             return;
@@ -213,14 +330,18 @@ public class AdminDAO {
     }
 
     public List<Solicitud> getAllRequests(String filter) {
-        return getRequests(filter, 0, 0, false);
+        return getRequests(filter, 0, 0, false, "id", "desc");
     }
 
     public List<Solicitud> getAllRequestsPaged(String filter, int page, int pageSize) {
-        return getRequests(filter, page, pageSize, true);
+        return getRequests(filter, page, pageSize, true, "id", "desc");
     }
 
-    private List<Solicitud> getRequests(String filter, int page, int pageSize, boolean paged) {
+    public List<Solicitud> getAllRequestsPaged(String filter, int page, int pageSize, String sort, String dir) {
+        return getRequests(filter, page, pageSize, true, sort, dir);
+    }
+
+    public List<Solicitud> getRequestsForAdminPaged(String filter, int adminId, int page, int pageSize, String sort, String dir) {
         List<Solicitud> list = new ArrayList<>();
 
         StringBuilder sql = new StringBuilder();
@@ -236,7 +357,63 @@ public class AdminDAO {
         List<Object> params = new ArrayList<>();
         applyFilterSql(sql, filter, params);
 
-        sql.append(" ORDER BY s.id DESC");
+        if (params.isEmpty()) {
+            sql.append(" WHERE s.responsable_id = ?");
+        } else {
+            sql.append(" AND s.responsable_id = ?");
+        }
+
+        params.add(adminId);
+
+        sql.append(" ").append(buildOrderBy(sort, dir));
+
+        if (page > 0 && pageSize > 0) {
+            sql.append(" LIMIT ? OFFSET ?");
+        }
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+            int index = 1;
+            for (Object param : params) {
+                ps.setObject(index++, param);
+            }
+
+            if (page > 0 && pageSize > 0) {
+                ps.setInt(index++, pageSize);
+                ps.setInt(index, (page - 1) * pageSize);
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapSolicitud(rs));
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
+    private List<Solicitud> getRequests(String filter, int page, int pageSize, boolean paged, String sort, String dir) {
+        List<Solicitud> list = new ArrayList<>();
+
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT s.*, ")
+           .append("ts.nombre AS tipo_nombre, ")
+           .append("e.nombre AS est_nombre, e.apellido AS est_apellido, ")
+           .append("resp.id AS resp_id, resp.nombre AS resp_nombre, resp.email AS resp_email ")
+           .append("FROM solicitud s ")
+           .append("INNER JOIN tipo_solicitud ts ON s.tipo_solicitud_id = ts.id ")
+           .append("INNER JOIN estudiante e ON s.estudiante_id = e.id ")
+           .append("LEFT JOIN administrador resp ON s.responsable_id = resp.id");
+
+        List<Object> params = new ArrayList<>();
+        applyFilterSql(sql, filter, params);
+
+        sql.append(" ").append(buildOrderBy(sort, dir));
 
         if (paged) {
             sql.append(" LIMIT ? OFFSET ?");
@@ -267,6 +444,40 @@ public class AdminDAO {
         }
 
         return list;
+    }
+
+    private String buildOrderBy(String sort, String dir) {
+        String normalizedSort = sort == null ? "id" : sort.trim().toLowerCase(Locale.ROOT);
+        String normalizedDir = "asc".equalsIgnoreCase(dir) ? "ASC" : "DESC";
+
+        String orderColumn;
+
+        switch (normalizedSort) {
+            case "estudiante":
+                orderColumn = "e.apellido, e.nombre";
+                break;
+            case "tipo":
+                orderColumn = "ts.nombre";
+                break;
+            case "fecha":
+                orderColumn = "s.fecha_solicitud";
+                break;
+            case "limite":
+                orderColumn = "s.fecha_limite";
+                break;
+            case "indicador":
+                orderColumn = "s.fecha_limite";
+                break;
+            case "estado":
+                orderColumn = "s.estado";
+                break;
+            case "id":
+            default:
+                orderColumn = "s.id";
+                break;
+        }
+
+        return "ORDER BY " + orderColumn + " " + normalizedDir + ", s.id DESC";
     }
 
     public int getRequestsCount(String filter) {
@@ -330,59 +541,7 @@ public class AdminDAO {
     }
 
     public List<Solicitud> getRequestsForAdminPaged(String filter, int adminId, int page, int pageSize) {
-        List<Solicitud> list = new ArrayList<>();
-
-        StringBuilder sql = new StringBuilder();
-        sql.append("SELECT s.*, ")
-           .append("ts.nombre AS tipo_nombre, ")
-           .append("e.nombre AS est_nombre, e.apellido AS est_apellido, ")
-           .append("resp.id AS resp_id, resp.nombre AS resp_nombre, resp.email AS resp_email ")
-           .append("FROM solicitud s ")
-           .append("INNER JOIN tipo_solicitud ts ON s.tipo_solicitud_id = ts.id ")
-           .append("INNER JOIN estudiante e ON s.estudiante_id = e.id ")
-           .append("LEFT JOIN administrador resp ON s.responsable_id = resp.id");
-
-        List<Object> params = new ArrayList<>();
-        applyFilterSql(sql, filter, params);
-
-        if (params.isEmpty()) {
-            sql.append(" WHERE s.responsable_id = ?");
-        } else {
-            sql.append(" AND s.responsable_id = ?");
-        }
-
-        sql.append(" ORDER BY s.id DESC");
-
-        if (page > 0 && pageSize > 0) {
-            sql.append(" LIMIT ? OFFSET ?");
-        }
-
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
-
-            int index = 1;
-            for (Object param : params) {
-                ps.setObject(index++, param);
-            }
-
-            ps.setInt(index++, adminId);
-
-            if (page > 0 && pageSize > 0) {
-                ps.setInt(index++, pageSize);
-                ps.setInt(index, (page - 1) * pageSize);
-            }
-
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    list.add(mapSolicitud(rs));
-                }
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return list;
+        return getRequestsForAdminPaged(filter, adminId, page, pageSize, "id", "desc");
     }
 
     public Solicitud getRequestById(int requestId) {
