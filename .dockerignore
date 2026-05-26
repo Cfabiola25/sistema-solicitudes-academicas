@@ -1,0 +1,9 @@
+dist/
+build/
+*.war
+*.class
+nbproject/private/
+.git
+target/
+*.iml
+/.idea
