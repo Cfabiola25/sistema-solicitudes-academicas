@@ -23,7 +23,6 @@ Thumbs.db
 # IDE
 .idea/
 .vscode/
-.github/prompts/*
 .antigravitycli
 sistemas-solicitudes-academicas.iml
 
