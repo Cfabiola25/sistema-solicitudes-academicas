@@ -11,7 +11,6 @@ import java.util.List;
 
 /**
  * Allows administrators to create and manage other administrator accounts.
- * The only role used by the system is 'admin'.
  */
 @WebServlet(name = "AdminUsersServlet", urlPatterns = {"/admin/admin-users"})
 public class AdminUsersServlet extends HttpServlet {
@@ -29,6 +28,11 @@ public class AdminUsersServlet extends HttpServlet {
             return;
         }
 
+        if (!isSuperAdminSession(session)) {
+            response.sendRedirect(request.getContextPath() + "/admin/dashboard");
+            return;
+        }
+
         loadAdmins(request);
         request.getRequestDispatcher("/admin/admin_users.jsp").forward(request, response);
     }
@@ -36,6 +40,8 @@ public class AdminUsersServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
+        request.setCharacterEncoding("UTF-8");
 
         HttpSession session = request.getSession(false);
 
@@ -65,6 +71,13 @@ public class AdminUsersServlet extends HttpServlet {
     private void createAdmin(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        HttpSession session = request.getSession(false);
+
+        if (!isSuperAdminSession(session)) {
+            forwardWithError(request, response, "Permiso denegado: sólo SuperAdmin puede crear administradores.");
+            return;
+        }
+
         String nombre = clean(request.getParameter("nombre"));
         String email = clean(request.getParameter("email")).toLowerCase();
         String password = clean(request.getParameter("password"));
@@ -83,7 +96,7 @@ public class AdminUsersServlet extends HttpServlet {
         admin.setNombre(nombre);
         admin.setEmail(email);
         admin.setPassword(util.PasswordHasher.secureHash(password));
-        admin.setRol("admin");
+        admin.setRol("Admin");
 
         boolean created = adminDAO.createAdmin(admin);
 
@@ -134,6 +147,16 @@ public class AdminUsersServlet extends HttpServlet {
      */
     private boolean isAdminSession(HttpSession session) {
         return session != null && "admin".equals(session.getAttribute("role"));
+    }
+
+    private boolean isSuperAdminSession(HttpSession session) {
+        if (session == null) return false;
+        Object user = session.getAttribute("user");
+        if (user instanceof Admin) {
+            Admin admin = (Admin) user;
+            return "SuperAdmin".equals(admin.getRol());
+        }
+        return false;
     }
 
     /**

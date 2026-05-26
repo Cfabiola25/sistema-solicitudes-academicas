@@ -63,6 +63,8 @@ public class AdminRequestDetailServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        request.setCharacterEncoding("UTF-8");
+
         HttpSession session = request.getSession(false);
 
         if (!isAdminSession(session)) {
@@ -104,6 +106,12 @@ public class AdminRequestDetailServlet extends HttpServlet {
         String archivoPath = saveUploadedFile(request);
 
         if (!comentario.isEmpty() || archivoPath != null) {
+            Solicitud solicitud = adminDAO.getRequestById(requestId);
+
+            if (solicitud != null && solicitud.getResponsable() == null) {
+                adminDAO.assignRequest(requestId, admin.getId());
+            }
+
             mensajeDAO.addMessage(requestId, "admin", admin.getNombre(), comentario, archivoPath);
         }
     }
@@ -150,7 +158,7 @@ public class AdminRequestDetailServlet extends HttpServlet {
     private void updateRequestStatus(HttpServletRequest request, int requestId, int adminId, String comentario) {
         String newState = clean(request.getParameter("newState"));
 
-        if ("Aprobada".equals(newState) || "Rechazada".equals(newState)) {
+        if ("Aprobada".equals(newState) || "Rechazada".equals(newState) || "Anulada".equals(newState)) {
             adminDAO.updateStatus(requestId, newState, comentario, adminId);
         }
     }

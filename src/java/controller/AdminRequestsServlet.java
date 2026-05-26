@@ -37,14 +37,38 @@ public class AdminRequestsServlet extends HttpServlet {
         String state = clean(request.getParameter("state"));
         int page = getPage(request);
 
-        int totalRecords = adminDAO.getRequestsCount(state);
+        int totalRecords;
+
+        boolean isSuper = false;
+        int adminId = 0;
+        if (session != null) {
+            Object user = session.getAttribute("user");
+            if (user instanceof model.Admin) {
+                model.Admin adm = (model.Admin) user;
+                isSuper = "SuperAdmin".equals(adm.getRol());
+                adminId = adm.getId();
+            }
+        }
+
+        if (isSuper) {
+            totalRecords = adminDAO.getRequestsCount(state);
+        } else {
+            totalRecords = adminDAO.getRequestsCountForAdmin(state, adminId);
+        }
+
         int totalPages = calculateTotalPages(totalRecords);
 
         if (page > totalPages && totalPages > 0) {
             page = totalPages;
         }
 
-        List<Solicitud> list = adminDAO.getAllRequestsPaged(state, page, PAGE_SIZE);
+        List<Solicitud> list;
+
+        if (isSuper) {
+            list = adminDAO.getAllRequestsPaged(state, page, PAGE_SIZE);
+        } else {
+            list = adminDAO.getRequestsForAdminPaged(state, adminId, page, PAGE_SIZE);
+        }
 
         request.setAttribute("list", list);
         request.setAttribute("selectedState", state);

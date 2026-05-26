@@ -1,13 +1,18 @@
 package controller;
 
+import dao.AdminDAO;
 import dao.TipoSolicitudDAO;
+import model.Admin;
 import model.TipoSolicitud;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Servlet for administrators to manage request types and response times (SLA).
@@ -16,6 +21,7 @@ import java.util.List;
 public class AdminRequestTypesServlet extends HttpServlet {
 
     private final TipoSolicitudDAO tipoDAO = new TipoSolicitudDAO();
+    private final AdminDAO adminDAO = new AdminDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -36,6 +42,8 @@ public class AdminRequestTypesServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        request.setCharacterEncoding("UTF-8");
+
         HttpSession session = request.getSession(false);
 
         if (!isAdminSession(session)) {
@@ -47,6 +55,15 @@ public class AdminRequestTypesServlet extends HttpServlet {
         boolean success = false;
 
         try {
+            if ("create".equals(action) || "update".equals(action) || "delete".equals(action)) {
+                if (!isSuperAdminSession(session)) {
+                    request.setAttribute("error", "Permiso denegado: sólo SuperAdmin puede modificar tipos de solicitud.");
+                    loadRequestTypes(request);
+                    request.getRequestDispatcher("/admin/request_types.jsp").forward(request, response);
+                    return;
+                }
+            }
+
             if ("create".equals(action)) {
                 success = createRequestType(request);
             } else if ("update".equals(action)) {
@@ -76,7 +93,12 @@ public class AdminRequestTypesServlet extends HttpServlet {
      */
     private void loadRequestTypes(HttpServletRequest request) {
         List<TipoSolicitud> list = tipoDAO.getAll();
+        List<Admin> admins = adminDAO.getAllAdmins();
+        Map<Integer, List<Admin>> responsablesPorTipo = tipoDAO.getResponsablesByTipoSolicitud();
+
         request.setAttribute("list", list);
+        request.setAttribute("admins", admins);
+        request.setAttribute("responsablesPorTipo", responsablesPorTipo);
     }
 
     /**
@@ -86,6 +108,7 @@ public class AdminRequestTypesServlet extends HttpServlet {
         String nombre = clean(request.getParameter("nombre"));
         Integer tiempoRespuestaDias = parseInteger(request.getParameter("tiempoRespuestaDias"));
         String tipoTiempo = clean(request.getParameter("tipoTiempo"));
+        List<Integer> responsableIds = parseSelectedIds(request.getParameterValues("responsableIds"));
 
         if (!isValidRequestType(nombre, tiempoRespuestaDias, tipoTiempo)) {
             return false;
@@ -96,7 +119,7 @@ public class AdminRequestTypesServlet extends HttpServlet {
         tipo.setTiempoRespuestaDias(tiempoRespuestaDias);
         tipo.setTipoTiempo(tipoTiempo);
 
-        return tipoDAO.create(tipo);
+        return tipoDAO.create(tipo, responsableIds);
     }
 
     /**
@@ -107,6 +130,7 @@ public class AdminRequestTypesServlet extends HttpServlet {
         String nombre = clean(request.getParameter("nombre"));
         Integer tiempoRespuestaDias = parseInteger(request.getParameter("tiempoRespuestaDias"));
         String tipoTiempo = clean(request.getParameter("tipoTiempo"));
+        List<Integer> responsableIds = parseSelectedIds(request.getParameterValues("responsableIds"));
 
         if (id == null || id <= 0 || !isValidRequestType(nombre, tiempoRespuestaDias, tipoTiempo)) {
             return false;
@@ -118,7 +142,7 @@ public class AdminRequestTypesServlet extends HttpServlet {
         tipo.setTiempoRespuestaDias(tiempoRespuestaDias);
         tipo.setTipoTiempo(tipoTiempo);
 
-        return tipoDAO.update(tipo);
+        return tipoDAO.update(tipo, responsableIds);
     }
 
     /**
@@ -152,6 +176,16 @@ public class AdminRequestTypesServlet extends HttpServlet {
         return session != null && "admin".equals(session.getAttribute("role"));
     }
 
+    private boolean isSuperAdminSession(HttpSession session) {
+        if (session == null) return false;
+        Object user = session.getAttribute("user");
+        if (user instanceof Admin) {
+            Admin admin = (Admin) user;
+            return "SuperAdmin".equals(admin.getRol());
+        }
+        return false;
+    }
+
     /**
      * Safely converts a string parameter to Integer.
      */
@@ -172,5 +206,25 @@ public class AdminRequestTypesServlet extends HttpServlet {
      */
     private String clean(String value) {
         return value == null ? "" : value.trim();
+    }
+
+    /**
+     * Parses selected admin IDs from a checkbox group.
+     */
+    private List<Integer> parseSelectedIds(String[] values) {
+        if (values == null || values.length == 0) {
+            return Collections.emptyList();
+        }
+
+        List<Integer> ids = new ArrayList<>();
+
+        for (String value : values) {
+            Integer id = parseInteger(value);
+            if (id != null && id > 0) {
+                ids.add(id);
+            }
+        }
+
+        return ids;
     }
 }
