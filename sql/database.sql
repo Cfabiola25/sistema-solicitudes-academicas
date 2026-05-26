@@ -87,7 +87,7 @@ CREATE TABLE administrador (
   nombre VARCHAR(100) NOT NULL,
   email VARCHAR(120) NOT NULL,
   password VARCHAR(255) NOT NULL,
-  rol ENUM('SuperAdmin', 'Coordinador', 'Secretaria') NOT NULL DEFAULT 'Coordinador',
+  rol ENUM('SuperAdmin', 'Admin', 'Secretaria') NOT NULL DEFAULT 'Admin',
   recuperacion_token VARCHAR(150) NULL,
   token_expiracion DATETIME NULL,
   activo TINYINT(1) NOT NULL DEFAULT 1,
@@ -96,6 +96,20 @@ CREATE TABLE administrador (
 
   CONSTRAINT uk_administrador_email UNIQUE (email),
   CONSTRAINT chk_administrador_activo CHECK (activo IN (0, 1))
+) ENGINE=InnoDB;
+
+CREATE TABLE tipo_solicitud_responsable (
+  tipo_solicitud_id INT UNSIGNED NOT NULL,
+  admin_id INT UNSIGNED NOT NULL,
+  fecha_asignacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (tipo_solicitud_id, admin_id),
+  CONSTRAINT fk_tipo_responsable_tipo
+    FOREIGN KEY (tipo_solicitud_id) REFERENCES tipo_solicitud(id)
+    ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT fk_tipo_responsable_admin
+    FOREIGN KEY (admin_id) REFERENCES administrador(id)
+    ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
 -- =========================================================
@@ -208,6 +222,10 @@ INSERT INTO tipo_solicitud (nombre, tiempo_respuesta_dias, tipo_tiempo) VALUES
 ('Constancia de estudio', 3, 'habiles'),
 ('Certificado de notas', 3, 'habiles'),
 ('Otra', 5, 'habiles');
+
+UPDATE tipo_solicitud
+SET nombre = 'Cancelación de asignaturas'
+WHERE nombre = 'Cancelación de asignaturas';
 
 -- Contraseña de prueba: conservar el hash generado por la aplicación.
 INSERT INTO estudiante
