@@ -345,23 +345,23 @@ public class AdminDAO {
         List<Solicitud> list = new ArrayList<>();
 
         StringBuilder sql = new StringBuilder();
-        sql.append("SELECT s.*, ")
+        sql.append("SELECT DISTINCT s.*, ")
            .append("ts.nombre AS tipo_nombre, ")
            .append("e.nombre AS est_nombre, e.apellido AS est_apellido, ")
            .append("resp.id AS resp_id, resp.nombre AS resp_nombre, resp.email AS resp_email ")
            .append("FROM solicitud s ")
            .append("INNER JOIN tipo_solicitud ts ON s.tipo_solicitud_id = ts.id ")
            .append("INNER JOIN estudiante e ON s.estudiante_id = e.id ")
-           .append("LEFT JOIN administrador resp ON s.responsable_id = resp.id");
+           .append("LEFT JOIN administrador resp ON s.responsable_id = resp.id ")
+           .append("INNER JOIN tipo_solicitud_responsable tr ON s.tipo_solicitud_id = tr.tipo_solicitud_id");
 
         List<Object> params = new ArrayList<>();
         applyFilterSql(sql, filter, params);
 
-        // Only show requests assigned to this admin (responsable_id = ?)
         if (params.isEmpty()) {
-            sql.append(" WHERE s.responsable_id = ?");
+            sql.append(" WHERE tr.admin_id = ?");
         } else {
-            sql.append(" AND s.responsable_id = ?");
+            sql.append(" AND tr.admin_id = ?");
         }
 
         params.add(adminId);
@@ -508,16 +508,16 @@ public class AdminDAO {
     }
 
     public int getRequestsCountForAdmin(String filter, int adminId) {
-        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM solicitud s");
+        StringBuilder sql = new StringBuilder("SELECT COUNT(DISTINCT s.id) FROM solicitud s ");
+        sql.append("INNER JOIN tipo_solicitud_responsable tr ON s.tipo_solicitud_id = tr.tipo_solicitud_id ");
         List<Object> params = new ArrayList<>();
 
         applyFilterSql(sql, filter, params);
 
-        // When counting for an admin, only include requests assigned to them
         if (params.isEmpty()) {
-            sql.append(" WHERE s.responsable_id = ?");
+            sql.append(" WHERE tr.admin_id = ?");
         } else {
-            sql.append(" AND s.responsable_id = ?");
+            sql.append(" AND tr.admin_id = ?");
         }
 
         params.add(adminId);
@@ -540,6 +540,26 @@ public class AdminDAO {
         }
 
         return 0;
+    }
+
+    public boolean isAdminAssignedToTipo(int adminId, int tipoSolicitudId) {
+        String sql = "SELECT 1 FROM tipo_solicitud_responsable WHERE tipo_solicitud_id = ? AND admin_id = ? LIMIT 1";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, tipoSolicitudId);
+            ps.setInt(2, adminId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return false;
     }
 
     public List<Solicitud> getRequestsForAdminPaged(String filter, int adminId, int page, int pageSize) {
@@ -573,6 +593,56 @@ public class AdminDAO {
                     if (adminId > 0) {
                         Admin admin = new Admin();
                         admin.setId(adminId);
+                        admin.setNombre(rs.getString("admin_nombre"));
+                        admin.setEmail(rs.getString("admin_email"));
+                        admin.setRol(DEFAULT_ADMIN_ROLE);
+                        solicitud.setAdministrador(admin);
+                    }
+
+                    return solicitud;
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public Solicitud getRequestByIdForAdmin(int requestId, int adminId, boolean isSuperAdmin) {
+        if (isSuperAdmin) {
+            return getRequestById(requestId);
+        }
+
+        String sql = "SELECT s.*, " +
+                "ts.nombre AS tipo_nombre, " +
+                "e.nombre AS est_nombre, e.apellido AS est_apellido, " +
+                "a.id AS admin_id, a.nombre AS admin_nombre, a.email AS admin_email, " +
+                "resp.id AS resp_id, resp.nombre AS resp_nombre, resp.email AS resp_email " +
+                "FROM solicitud s " +
+                "INNER JOIN tipo_solicitud ts ON s.tipo_solicitud_id = ts.id " +
+                "INNER JOIN estudiante e ON s.estudiante_id = e.id " +
+                "LEFT JOIN administrador a ON s.admin_id = a.id " +
+                "LEFT JOIN administrador resp ON s.responsable_id = resp.id " +
+                "INNER JOIN tipo_solicitud_responsable tr ON s.tipo_solicitud_id = tr.tipo_solicitud_id " +
+                "WHERE s.id = ? AND tr.admin_id = ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, requestId);
+            ps.setInt(2, adminId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Solicitud solicitud = mapSolicitud(rs);
+
+                    int adminIdValue = rs.getInt("admin_id");
+
+                    if (adminIdValue > 0) {
+                        Admin admin = new Admin();
+                        admin.setId(adminIdValue);
                         admin.setNombre(rs.getString("admin_nombre"));
                         admin.setEmail(rs.getString("admin_email"));
                         admin.setRol(DEFAULT_ADMIN_ROLE);

@@ -80,6 +80,14 @@
 
     <div class="p-8 flex-1">
 
+        <% String errorMessage = (String) request.getAttribute("error"); %>
+        <% if (errorMessage != null && !errorMessage.trim().isEmpty()) { %>
+            <div class="mb-6 rounded-2xl bg-red-50 border border-red-100 px-5 py-4 text-sm text-red-700 font-semibold">
+                <i class="fa-solid fa-triangle-exclamation mr-2"></i>
+                <%= errorMessage %>
+            </div>
+        <% } %>
+
         <div class="flex items-start justify-between mb-6">
             <div>
                 <h1 class="text-2xl font-extrabold text-gray-900">

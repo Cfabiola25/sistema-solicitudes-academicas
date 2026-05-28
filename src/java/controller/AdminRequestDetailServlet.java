@@ -56,7 +56,7 @@ public class AdminRequestDetailServlet extends HttpServlet {
             return;
         }
 
-        Solicitud solicitud = adminDAO.getRequestById(id);
+        Solicitud solicitud = getAuthorizedRequest(session, id);
 
         if (solicitud == null) {
             response.sendRedirect(request.getContextPath() + "/admin/requests");
@@ -97,34 +97,105 @@ public class AdminRequestDetailServlet extends HttpServlet {
             return;
         }
 
+        Solicitud solicitud = getAuthorizedRequest(session, id);
+
+        if (solicitud == null) {
+            response.sendRedirect(request.getContextPath() + "/admin/requests");
+            return;
+        }
+
         String action = clean(request.getParameter("action"));
         String comentario = clean(request.getParameter("comentario"));
 
         if ("message".equals(action)) {
-            addMessage(request, id, admin, comentario);
+            addMessage(request, solicitud, admin, comentario);
         } else if ("assign".equals(action)) {
-            assignResponsible(request, id);
+            if (!processAssignAction(request, response, solicitud, admin)) {
+                return;
+            }
         } else {
-            updateRequestStatus(request, id, admin.getId(), comentario);
+            updateRequestStatus(request, solicitud, admin, comentario);
         }
 
         response.sendRedirect(request.getContextPath() + "/admin/request-detail?id=" + id);
     }
 
-    private void addMessage(HttpServletRequest request, int requestId, Admin admin, String comentario)
+    private void addMessage(HttpServletRequest request, Solicitud solicitud, Admin admin, String comentario)
             throws IOException, ServletException {
 
         String archivoPath = saveUploadedFile(request);
 
         if (!comentario.isEmpty() || archivoPath != null) {
-            Solicitud solicitud = adminDAO.getRequestById(requestId);
+            boolean added = mensajeDAO.addMessage(solicitud.getId(), "admin", admin.getNombre(), comentario, archivoPath);
 
-            if (solicitud != null && solicitud.getResponsable() == null) {
-                adminDAO.assignRequest(requestId, admin.getId());
+            if (added && "Enviada".equals(solicitud.getEstado())) {
+                adminDAO.updateStatus(solicitud.getId(), "Pendiente", comentario, admin.getId());
             }
-
-            mensajeDAO.addMessage(requestId, "admin", admin.getNombre(), comentario, archivoPath);
         }
+    }
+
+    private void assignResponsible(HttpServletRequest request, Solicitud solicitud, Admin admin) {
+        if (!isSuperAdmin(admin)) {
+            return;
+        }
+
+        Integer responsableId = parseInteger(request.getParameter("responsableId"));
+
+        if (responsableId != null && responsableId > 0) {
+            adminDAO.assignRequest(solicitud.getId(), responsableId);
+        }
+    }
+
+    private void updateRequestStatus(HttpServletRequest request, Solicitud solicitud, Admin admin, String comentario) {
+        if (!canManageRequest(admin, solicitud)) {
+            return;
+        }
+
+        String newState = clean(request.getParameter("newState"));
+
+        if ("Aprobada".equals(newState) || "Rechazada".equals(newState) || "Anulada".equals(newState)) {
+            adminDAO.updateStatus(solicitud.getId(), newState, comentario, admin.getId());
+        }
+    }
+
+    private Solicitud getAuthorizedRequest(HttpSession session, int requestId) {
+        Admin admin = getSessionAdmin(session);
+
+        if (admin == null) {
+            return null;
+        }
+
+        boolean isSuper = "SuperAdmin".equals(admin.getRol());
+        return adminDAO.getRequestByIdForAdmin(requestId, admin.getId(), isSuper);
+    }
+
+    private Admin getSessionAdmin(HttpSession session) {
+        if (session == null) {
+            return null;
+        }
+
+        Object user = session.getAttribute("user");
+        return user instanceof Admin ? (Admin) user : null;
+    }
+
+    private boolean canManageRequest(Admin admin, Solicitud solicitud) {
+        if (admin == null || solicitud == null) {
+            return false;
+        }
+
+        if ("SuperAdmin".equals(admin.getRol())) {
+            return true;
+        }
+
+        if (solicitud.getTipo() == null) {
+            return false;
+        }
+
+        return adminDAO.isAdminAssignedToTipo(admin.getId(), solicitud.getTipo().getId());
+    }
+
+    private boolean isSuperAdmin(Admin admin) {
+        return admin != null && "SuperAdmin".equals(admin.getRol());
     }
 
     private String saveUploadedFile(HttpServletRequest request)
@@ -213,20 +284,20 @@ public class AdminRequestDetailServlet extends HttpServlet {
         return fileName.substring(dotIndex + 1);
     }
 
-    private void assignResponsible(HttpServletRequest request, int requestId) {
-        Integer responsableId = parseInteger(request.getParameter("responsableId"));
-
-        if (responsableId != null && responsableId > 0) {
-            adminDAO.assignRequest(requestId, responsableId);
+    private boolean processAssignAction(HttpServletRequest request, HttpServletResponse response,
+                                         Solicitud solicitud, Admin admin)
+            throws ServletException, IOException {
+        if (!isSuperAdmin(admin)) {
+            request.setAttribute("error", "No autorizado: sólo SuperAdmin puede reasignar solicitudes.");
+            request.setAttribute("solicitud", solicitud);
+            request.setAttribute("mensajes", mensajeDAO.getBySolicitudId(solicitud.getId()));
+            request.setAttribute("admins", adminDAO.getAllAdmins());
+            request.getRequestDispatcher("/admin/request_detail.jsp").forward(request, response);
+            return false;
         }
-    }
 
-    private void updateRequestStatus(HttpServletRequest request, int requestId, int adminId, String comentario) {
-        String newState = clean(request.getParameter("newState"));
-
-        if ("Aprobada".equals(newState) || "Rechazada".equals(newState) || "Anulada".equals(newState)) {
-            adminDAO.updateStatus(requestId, newState, comentario, adminId);
-        }
+        assignResponsible(request, solicitud, admin);
+        return true;
     }
 
     private boolean isAdminSession(HttpSession session) {
