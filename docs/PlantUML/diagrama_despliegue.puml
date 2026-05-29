@@ -1,0 +1,15 @@
+@startuml
+skinparam shadowing false
+skinparam linetype ortho
+
+actor "Usuario / Navegador" as User
+
+node "Servidor de Aplicaciones\nJava Servlet (Tomcat)" as AppServer {
+  component "Aplicación web\nJava / Servlets" as WebApp
+}
+
+database "Base de datos MySQL 8\nfesc_solicitudes" as MySQLDB
+
+User --> WebApp : HTTP/HTTPS
+WebApp --> MySQLDB : JDBC
+@enduml

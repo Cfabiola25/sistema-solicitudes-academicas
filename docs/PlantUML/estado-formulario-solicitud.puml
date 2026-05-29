@@ -1,0 +1,34 @@
+@startuml
+title Diagrama de Estados - Gestión de Formularios
+
+skinparam shadowing false
+skinparam linetype ortho
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+hide empty description
+
+[*] --> CargandoFormulario
+
+state "Cargando Formulario" as CargandoFormulario
+state "Formulario Visible" as FormularioVisible
+state "Validando Datos" as Validando
+state "Guardando Informacion" as Guardando
+state "Error de Validacion" as ErrorValidacion
+state "Error del Servidor" as ErrorServidor
+state "Registro Exitoso" as Exito
+
+CargandoFormulario --> FormularioVisible : Datos listos
+FormularioVisible --> Validando : Enviar formulario
+
+Validando --> Guardando : Validacion exitosa
+Validando --> ErrorValidacion : Validacion falla
+
+Guardando --> Exito : POST exitoso
+Guardando --> ErrorServidor : Error en persistencia
+
+ErrorValidacion --> FormularioVisible : Corregir campos
+ErrorServidor --> FormularioVisible : Reintentar
+
+Exito --> [*]
+
+@enduml

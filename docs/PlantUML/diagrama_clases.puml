@@ -1,0 +1,109 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+
+class Sede {
+  +int id
+  +String nombre
+}
+
+class Jornada {
+  +int id
+  +String nombre
+}
+
+class ProgramaAcademico {
+  +int id
+  +String codigo
+  +String nombre
+}
+
+class TipoSolicitud {
+  +int id
+  +String nombre
+  +int tiempoRespuestaDias
+  +String tipoTiempo
+  +boolean activo
+}
+
+class Estudiante {
+  +int id
+  +String nombre
+  +String apellido
+  +String email
+  +String password
+  +int programaId
+  +int sedeId
+  +int jornadaId
+  +boolean terminosAceptados
+  +String recuperacionToken
+  +Date tokenExpiracion
+  +Date fechaCreacion
+  +Date fechaActualizacion
+}
+
+class Administrador {
+  +int id
+  +String nombre
+  +String email
+  +String password
+  +String rol
+  +String recuperacionToken
+  +Date tokenExpiracion
+  +boolean activo
+  +Date fechaCreacion
+  +Date fechaActualizacion
+}
+
+class TipoSolicitudResponsable {
+  +int tipoSolicitudId
+  +int adminId
+  +Date fechaAsignacion
+}
+
+class Solicitud {
+  +int id
+  +int estudianteId
+  +int tipoSolicitudId
+  +String descripcion
+  +Date fechaSolicitud
+  +String estado
+  +String documento
+  +Date fechaLimite
+  +Date fechaRespuesta
+  +String comentarioRespuesta
+  +int adminId
+  +int responsableId
+}
+
+class SolicitudMensaje {
+  +int id
+  +int solicitudId
+  +String autorRol
+  +String autorNombre
+  +String mensaje
+  +String archivo
+  +Date fechaEnvio
+}
+
+class AuditoriaRetraso {
+  +int id
+  +int solicitudId
+  +int adminId
+  +int diasRetraso
+  +Date fechaAuditoria
+}
+
+ProgramaAcademico "1" -- "0..*" Estudiante
+Sede "1" -- "0..*" Estudiante
+Jornada "1" -- "0..*" Estudiante
+TipoSolicitud "1" -- "0..*" TipoSolicitudResponsable
+Administrador "1" -- "0..*" TipoSolicitudResponsable
+Estudiante "1" -- "0..*" Solicitud
+TipoSolicitud "1" -- "0..*" Solicitud
+Solicitud "1" -- "0..*" SolicitudMensaje
+Solicitud "1" -- "0..*" AuditoriaRetraso
+Administrador "1" -- "0..*" AuditoriaRetraso
+Administrador "1" -- "0..*" Solicitud : admin
+Administrador "1" -- "0..*" Solicitud : responsable
+@enduml

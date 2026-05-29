@@ -1,0 +1,753 @@
+\documentclass[12pt,letterpaper]{article}
+
+% -------------------------------------------------
+% Codificación y compatibilidad de fuente (Arial / Helvetica)
+% -------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-tabla]{babel}
+
+% Configuración para usar Helvetica (clon directo de Arial) en TODO el documento
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\shorthandoff{"}
+
+% -------------------------------------------------
+% Formato general tipo APA y Control de Páginas
+% -------------------------------------------------
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{indentfirst}
+\usepackage[table]{xcolor}
+\usepackage{hyperref}
+\usepackage{xurl}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{needspace}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{ragged2e}
+\usepackage{float}
+\usepackage{etoolbox}
+\usepackage{tocloft}
+
+% Márgenes APA
+\geometry{margin=1in}
+\setlength{\headheight}{15pt}
+\doublespacing
+\setlength{\parindent}{0.5in}
+\setlength{\parskip}{0pt}
+\raggedright
+
+% Configuración de listas compactas para evitar saltos huerfanos
+\setlist[itemize]{leftmargin=0.5in, topsep=0pt, partopsep=0pt, parsep=0pt, itemsep=4pt}
+\setlist[enumerate]{leftmargin=0.5in, topsep=0pt, partopsep=0pt, parsep=0pt, itemsep=4pt}
+
+% -------------------------------------------------
+% Encabezado y numeración
+% -------------------------------------------------
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+
+% -------------------------------------------------
+% Colores y enlaces
+% -------------------------------------------------
+\definecolor{apaBlue}{HTML}{1F4E79}
+\definecolor{tableStripe}{HTML}{F2F4F7}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    urlcolor=apaBlue,
+    citecolor=black,
+    pdftitle={Manual de Usuario POO: Sistema de Solicitudes Académicas FESC},
+    pdfauthor={Laura Valentina Rozzo Espinel y otros}
+}
+
+% -------------------------------------------------
+% Tablas de Alta Estética (Estilo Editorial Limpio)
+% -------------------------------------------------
+\renewcommand{\arraystretch}{1.20}
+\setlength{\arrayrulewidth}{0.8pt}
+\setlength{\tabcolsep}{8pt}
+\setlength{\LTpre}{0.5em}
+\setlength{\LTpost}{0.5em}
+\newcolumntype{L}[1]{>{\RaggedRight\arraybackslash}p{#1}}
+
+\AtBeginEnvironment{longtable}{%
+  \setlength{\tabcolsep}{6pt}%
+  \rowcolors{2}{tableStripe}{white}%
+}
+
+\captionsetup[table]{font={small,sf},labelfont=bf,position=above,skip=6pt}
+\captionsetup[figure]{font={small,sf},labelfont=bf,position=above,skip=6pt}
+
+% -------------------------------------------------
+% Títulos (Todos en tamaño 12pt / \normalsize)
+% -------------------------------------------------
+\titleformat{\section}
+  {\normalfont\centering\bfseries\normalsize}
+  {\thesection.}{0.5em}{}
+
+\titleformat{\subsection}
+  {\normalfont\bfseries\normalsize}
+  {\thesubsection}{0.5em}{}
+
+\titleformat{\subsubsection}
+  {\normalfont\bfseries\itshape\normalsize}
+  {\thesubsubsection}{0.5em}{}
+
+\titlespacing*{\section}{0pt}{1.5em}{1em}
+\titlespacing*{\subsection}{0pt}{1.2em}{0.8em}
+\titlespacing*{\subsubsection}{0pt}{1em}{0.6em}
+
+% Cada sección principal inicia en hoja nueva de forma limpia
+\pretocmd{\section}{\clearpage}{}{}
+
+% Comandos de utilidad
+\newcommand{\code}[1]{\texorpdfstring{\begingroup\normalfont\normalsize\def\_{\textunderscore\allowbreak}#1\endgroup}{#1}}
+\newcommand{\dash}{---}
+
+% Comando estándar para una sola captura de pantalla
+\newcommand{\screenshotfigure}[4]{%
+\begin{figure}[H]
+\centering
+\caption{#2}
+\label{#4}
+\vspace{0.2cm}
+\IfFileExists{#1}{%
+  \includegraphics[width=0.92\textwidth]{#1}%
+}{%
+  \fbox{\parbox{0.92\textwidth}{\centering\vspace{1.5cm}%
+    \textit{[Captura de pantalla pendiente: #2]}\\[0.3cm]%
+    \small #1%
+    \vspace{1.5cm}}}%
+}
+\par\vspace{0.2cm}
+\textit{Descripción de la imagen: #3}
+\end{figure}
+}
+
+% NUEVO COMANDO: Para dos capturas de pantalla en paralelo dentro de la misma figura
+% #1: Ruta Imagen 1 | #2: Ruta Imagen 2 | #3: Título | #4: Descripción | #5: Label 1 | #6: Label 2
+\newcommand{\twoscreenshotfigure}[6]{%
+\begin{figure}[H]
+\centering
+\caption{#3}
+\label{#5}
+\vspace{0.2cm}
+\begin{minipage}[b]{0.47\textwidth}
+\centering
+\IfFileExists{#1}{%
+  \includegraphics[width=\textwidth]{#1}%
+}{%
+  \fbox{\parbox{\textwidth}{\centering\vspace{1cm}%
+    \textit{[Pendiente: #1]}\vspace{1cm}}}%
+}
+\end{minipage}
+\hfill
+\begin{minipage}[b]{0.47\textwidth}
+\centering
+\IfFileExists{#2}{%
+  \includegraphics[width=\textwidth]{#2}%
+}{%
+  \fbox{\parbox{\textwidth}{\centering\vspace{1cm}%
+    \textit{[Pendiente: #2]}\vspace{1cm}}}%
+}
+\end{minipage}
+\par\vspace{0.2cm}
+\textit{Descripción de las imágenes: #4}
+\end{figure}
+}
+
+\begin{document}
+
+% ==================================================================
+% PORTADA ORIENTADA A OBJETOS (12pt Real)
+% ==================================================================
+\begin{titlepage}
+    \centering
+    \vspace*{0.5in}
+
+    {\normalsize\bfseries
+    Laura Valentina Rozzo Espinel\\
+    Nelly Fabiola Cano Oviedo\\
+    Nestor Ivan Granados Valenzuela\\
+    Nick Alejandro Ortega Mendez\\
+    Santiago Alejandro Medina Ortega\\
+    Valery Gabriela Alarcon Peña
+    \par}
+    \vspace{0.6in}
+
+    {\normalsize Ingeniería de Software \par}
+    \vspace{0.4in}
+
+    {\normalsize Fundación de Estudios Superiores Comfanorte (FESC) \par}
+    \vspace{0.6in}
+
+    {\normalsize\bfseries Programación Orientada a Objetos \par}
+    \vspace{0.4in}
+
+    {\normalsize Proyecto Pedagógico de Aula (PPA) \par}
+    \vspace{0.5in}
+
+    {\normalsize\bfseries MANUAL DE USUARIO:\\ SISTEMA OPERATIVO WEB PARA LA GESTIÓN DE INSTANCIAS Y OBJETOS DE SOLICITUD ACADÉMICA\par}
+    \vspace{0.6in}
+
+    {\normalsize Ing. Angel Ureña \par}
+
+    \vfill
+    {\normalsize San José de Cúcuta, Mayo de 2026 \par}
+\end{titlepage}
+
+\newpage
+\tableofcontents
+
+\newpage
+\addcontentsline{toc}{section}{Índice de tablas}
+\listoftables
+
+\newpage
+\addcontentsline{toc}{section}{Índice de figuras}
+\listoffigures
+
+% ==================================================================
+\clearpage
+\section*{Introducción}
+\addcontentsline{toc}{section}{Introducción}
+% ==================================================================
+
+Bienvenido al manual de usuario del \textbf{Sistema de Solicitudes Académicas FESC}. Este documento detalla la guía operativa para interactuar con los componentes gráficos de la plataforma, desarrollada bajo el paradigma de la \textbf{Programación Orientada a Objetos (POO)}. El sistema abstrae las dinámicas escolares en una arquitectura modular de tres capas, utilizando clases controladoras (Servlets), objetos de transferencia de datos y clases contenedoras de entidades que interactúan de manera acoplada con el motor de persistencia MySQL.
+
+A través de la interfaz, el usuario opera flujos lógicos controlados donde se ejecutan los principios fundamentales de POO. Los atributos de los usuarios se encuentran protegidos bajo mecanismos de encapsulamiento, permitiendo su mutación únicamente a través de la invocación de métodos definidos en la lógica del negocio. Cada trámite radicado representa la instanciación de un objeto de la clase \code{Solicitud}, el cual cuenta con propiedades específicas, un estado persistente y un ciclo de vida rastreable.
+
+Este manual orienta al usuario mediante dos divisiones principales: la interfaz pública para la manipulación de objetos del rol Estudiante y el entorno privado dedicado a los métodos del rol Administrador.
+
+% ==================================================================
+\section{Objetivos}
+% ==================================================================
+
+El objetivo general de este manual es guiar a la comunidad académica FESC en la manipulación y consumo de los métodos del software orientado a objetos de gestión de trámites.
+
+Los objetivos específicos son:
+\begin{itemize}
+    \item Detallar el proceso de paso de parámetros y autenticación síncrona en el sistema.
+    \item Describir el ciclo de vida y los cambios de estado del objeto \code{Solicitud} (Enviada, Pendiente, Aprobada, Rechazada, Anulada).
+    \item Instruir al estudiante en la invocación de métodos de persistencia para crear, leer, actualizar y cancelar instancias de solicitudes.
+    \item Capacitar al administrador en la manipulación de colecciones de objetos complejos, tales como registros de estudiantes, tipos de trámites y reportes.
+\end{itemize}
+
+% ==================================================================
+\section{Requisitos del Sistema}
+% ==================================================================
+
+Esta sección define los requerimientos operacionales para asegurar la correcta interpretación de los componentes del software en el cliente.
+
+\subsection{Requisitos técnicos}
+
+Para una correcta renderización de los componentes interactivos del DOM, el sistema requiere:
+\begin{itemize}
+    \item Navegador web moderno con compatibilidad para scripts asíncronos: Google Chrome, Microsoft Edge, Mozilla Firefox o Brave.
+    \item Conexión a la red de datos interna de la institución o acceso a internet estable.
+    \item Monitor o pantalla con una resolución mínima de 1366 $\times$ 768 píxeles.
+    \item Dispositivo de escritorio o portátil para ejecutar de manera cómoda los métodos de administración masiva de datos.
+\end{itemize}
+
+\subsection{Requisitos de acceso}
+
+La verificación y autorización de las instancias de usuario demanda:
+\begin{itemize}
+    \item Correo electrónico institucional que actúe como atributo identificador único.
+    \item Contraseña registrada, procesada mediante métodos criptográficos de hash.
+    \item Asignación de rol específica que determine la visibilidad de los objetos de la interfaz.
+\end{itemize}
+
+% ==================================================================
+\section{Manual de Usuario Estudiante}
+% ==================================================================
+
+Esta sección agrupa las funciones y comportamientos que corresponden a los objetos pertenecientes a la clase Estudiante.
+
+\subsection{Pantalla de inicio de sesión}
+
+La ventana de acceso captura las variables del usuario, validando su correspondencia con los objetos persistidos en la base de datos a través de llamadas controladas al backend.
+
+\screenshotfigure
+{assets/login.png}
+{Pantalla de inicio de sesión}
+{Se observa la pantalla de acceso con los campos de correo, contraseña y el botón para iniciar sesión.}
+{fig:login}
+
+Para invocar el método de inicio de sesión:
+\begin{enumerate}
+    \item Digite su correo electrónico institucional en el campo de texto correspondiente.
+    \item Ingrese la contraseña configurada.
+    \item Presione el comando de acción \textbf{Iniciar sesión} para instanciar el objeto de sesión.
+\end{enumerate}
+
+\subsection{Registro de estudiante}
+
+El formulario de registro recolecta los atributos requeridos por el constructor de la clase para dar de alta una nueva instancia de Estudiante.
+
+\screenshotfigure
+{assets/register.png}
+{Formulario de registro de estudiante}
+{Se observa el formulario completo de registro donde el estudiante diligencia sus datos personales y académicos.}
+{fig:register}
+
+Pasos para registrar un nuevo objeto de usuario:
+\begin{enumerate}
+    \item Suministre sus nombres y apellidos en los campos de entrada de texto.
+    \item Proporcione la dirección de correo institucional.
+    \item Defina una contraseña alfanumérica segura.
+    \item Seleccione el objeto del programa académico correspondiente de la lista de opciones.
+    \item Indique la sede y jornada en las que se registrará el alumno.
+    \item Confirme la persistencia del nuevo registro presionando el botón de envío.
+\end{enumerate}
+
+\subsection{Recuperación de contraseña}
+
+Ante un bloqueo en la autenticación, se expone un método para restablecer el estado del atributo de contraseña.
+
+\screenshotfigure
+{assets/forgot-password.png}
+{Formulario de recuperación de contraseña}
+{Se observa el formulario destinado a la recuperación de contraseña o solicitud de asistencia para restablecer el acceso.}
+{fig:forgot-password}
+
+El sistema interactúa con un servlet de soporte que invalida la clave previa y reasigna un acceso provisional controlado, manteniendo segura la confidencialidad de la cuenta.
+
+\subsection{Panel principal del estudiante}
+
+Al completarse el login con éxito, la aplicación renderiza el entorno gráfico del Estudiante, exponiendo el estado actual de sus trámites académicos.
+
+\screenshotfigure
+{assets/student-dashboard.png}
+{Panel principal del estudiante}
+{Se observa el panel principal del estudiante con accesos a solicitudes, perfil y opciones principales del sistema.}
+{fig:student-dashboard}
+
+A través del panel de control se pueden ejecutar los siguientes métodos de consulta:
+\begin{itemize}
+    \item Instanciar un nuevo objeto de solicitud académica.
+    \item Consultar colecciones e históricos de trámites registrados.
+    \item Monitorear las transiciones de estado de los procesos abiertos.
+    \item Leer los datos de filiación contenidos en el perfil del usuario.
+\end{itemize}
+
+\subsection{Crear nueva solicitud}
+
+El formulario actúa como la interfaz de captura encargada de estructurar los parámetros que requiere una nueva instancia de la clase \code{Solicitud}.
+
+\screenshotfigure
+{assets/student-new-request.png}
+{Formulario de nueva solicitud}
+{Se observa el formulario donde el estudiante selecciona el tipo de solicitud, describe el caso y adjunta soportes.}
+{fig:student-new-request}
+
+Pasos para instanciar una solicitud:
+\begin{enumerate}
+    \item Seleccione el comando \textbf{Nueva solicitud}.
+    \item Escoja el tipo de trámite de la colección desplegable.
+    \item Redacte detalladamente los motivos del caso en el bloque de texto.
+    \item Cargue el soporte digital adjunto si la lógica del trámite lo exige.
+    \item Presione el botón de envío para mandar el objeto hacia la cola de revisión.
+\end{enumerate}
+
+\subsection{Listado de solicitudes}
+
+Módulo visual que despliega el arreglo completo de las solicitudes asociadas al identificador del estudiante logueado.
+
+\screenshotfigure
+{assets/student-request-list.png}
+{Listado de mis solicitudes}
+{Se observa la tabla de solicitudes del estudiante con información del trámite, estado y opciones de consulta.}
+{fig:student-requests-list}
+
+\Needspace{6\baselineskip}
+Cada elemento de la grilla de datos expone de forma pública las siguientes propiedades:
+\begin{itemize}
+    \item Identificador incremental del objeto (ID).
+    \item Tipo de solicitud instanciada.
+    \item Timestamp o fecha de creación del registro.
+    \item Estado actual del ciclo de vida del trámite.
+    \item Enlace interactivo para consultar detalles extendidos.
+\end{itemize}
+
+\subsection{Detalle de una solicitud}
+
+Esta vista especializada permite inspeccionar los atributos internos de una solicitud y auditar las respuestas vinculadas a su resolución.
+
+\screenshotfigure
+{assets/student-request-detail.png}
+{Detalle de una solicitud abierta}
+{Se observa el detalle de una solicitud con su descripción, estado, historial y respuestas administrativas.}
+{fig:student-request-detail}
+
+Las opciones de inspección en este componente permiten:
+\begin{itemize}
+    \item Validar el estado lógico actual asignado por el revisor administrativo.
+    \item Leer los mensajes y observaciones inyectados por los funcionarios.
+    \item Descargar los archivos de soporte y resoluciones emitidas.
+\end{itemize}
+
+\subsection{Editar solicitud}
+
+Si las reglas del negocio lo permiten y la solicitud no ha sido procesada por un revisor, el estudiante puede invocar métodos de modificación sobre el registro.
+
+\screenshotfigure
+{assets/student-edit-request.png}
+{Formulario de edición de solicitud}
+{Se observa el formulario utilizado para modificar una solicitud previamente registrada.}
+{fig:student-edit-request}
+
+Para alterar los parámetros de una solicitud:
+\begin{enumerate}
+    \item Abra la vista de detalle del trámite correspondiente.
+    \item Seleccione la acción \textbf{Editar}.
+    \item Actualice la información en los campos habilitados por el formulario.
+    \item Guarde los cambios para actualizar el estado del objeto en la base de datos.
+\end{enumerate}
+
+\subsection{Anular solicitud}
+
+El sistema implementa una confirmación de seguridad antes de alterar de manera destructiva o permanente el estado de una solicitud en proceso.
+
+\screenshotfigure
+{assets/student-cancel-confirmation.png}
+{Modal de confirmación para anular solicitud}
+{Se observa el mensaje de confirmación antes de cancelar o anular una solicitud académica.}
+{fig:student-cancel-confirmation}
+
+Al ejecutarse el método de anulación, el objeto cambia su propiedad interna a \code{Anulada}. El registro permanece persistido en la base de datos para mantener la integridad histórica, pero se bloquea para flujos operativos posteriores.
+
+\subsection{Perfil del estudiante}
+
+Sección dedicada a reflejar los atributos encapsulados que describen la identidad y situación académica del usuario.
+
+\screenshotfigure
+{assets/student-profile.png}
+{Página de perfil del estudiante}
+{Se observa la página de perfil con los datos personales, académicos y de contacto del estudiante.}
+{fig:student-profile}
+
+Los datos contenidos y protegidos por el perfil de usuario abarcan:
+\begin{itemize}
+    \item Nombres y apellidos completos del titular de la cuenta.
+    \item Dirección de correo electrónico institucional de identificación única.
+    \item Vínculo con el programa académico, la sede geográfica y la jornada horaria asignada.
+\end{itemize}
+
+\subsection{Cerrar sesión como estudiante}
+
+Invoca la destrucción explícita de la instancia de sesión HTTP en el servidor web, liberando la memoria caché y redirigiendo el flujo de ejecución a la pantalla de login de inicio.
+
+% ==================================================================
+\section{Manual de Usuario Administrativo}
+% ==================================================================
+
+Esta sección delimita las funciones operativas asignadas a los administradores del sistema, capacitados para manipular colecciones complejas de datos.
+
+\subsection{Inicio de sesión administrativo}
+
+El personal con rol de gestión accede a la plataforma validando sus propiedades de identidad contra el pool de administradores autorizados.
+
+\screenshotfigure
+{assets/admin-login.png}
+{Login con rol administrador}
+{Se observa la pantalla de inicio de sesión correspondiente al acceso administrativo del sistema.}
+{fig:admin-login}
+
+Para validar el acceso:
+\begin{enumerate}
+    \item Introduzca el correo institucional administrativo habilitado.
+    \item Digite la clave segura de autenticación.
+    \item Presione el botón \textbf{Ingresar} para cargar los privilegios del rol.
+\end{enumerate}
+
+\subsection{Panel principal del administrador}
+
+El dashboard administrativo consolida y despliega las métricas globales de control, actuando como una interfaz que resume el estado de los objetos activos de la plataforma.
+
+\twoscreenshotfigure
+{assets/admin-dashboard-1.png}
+{assets/admin-dashboard-2.png}
+{Panel principal del administrador}
+{Se observa el tablero administrativo con indicadores, accesos rápidos y resumen de solicitudes.}
+{fig:admin-dashboard-1}
+{fig:admin-dashboard-2}
+
+El panel provee comandos de acceso directo para:
+\begin{itemize}
+    \item Monitorear estadísticas globales y balances de trámites acumulados.
+    \item Ingresar de forma inmediata al módulo de control de solicitudes pendientes.
+    \item Administrar los objetos pertenecientes a los catálogos de estudiantes, programas y usuarios.
+    \item Generar y descargar reportes analíticos de gestión institucional.
+\end{itemize}
+
+\subsection{Listado de solicitudes administrativas}
+
+Módulo encargado de desplegar la colección de solicitudes del sistema de forma tabular, ofreciendo métodos de filtrado y ordenación selectiva.
+
+\screenshotfigure
+{assets/admin-request-list.png}
+{Listado de solicitudes con filtros}
+{Se observa la tabla administrativa de solicitudes con filtros por estado, tipo de solicitud y opciones de acción.}
+{fig:admin-request-list}
+
+A través de esta vista, el gestor puede:
+\begin{itemize}
+    \item Segmentar el arreglo de solicitudes según sus variables de estado.
+    \item Agrupar las filas de datos de acuerdo con el tipo de trámite seleccionado.
+    \item Ejecutar llamadas para inspeccionar el detalle profundo de cada registro.
+\end{itemize}
+
+\subsection{Detalle de solicitud desde administrador}
+
+Componente visual de alta jerarquía utilizado para evaluar el contenido de una petición y ejecutar la inyección de respuestas en el objeto.
+
+\screenshotfigure
+{assets/admin-request-detail.png}
+{Detalle de solicitud desde administrador}
+{Se observa el detalle de una solicitud desde el panel administrativo, incluyendo información del estudiante, descripción y trazabilidad.}
+{fig:admin-request-detail}
+
+El administrador interactúa con la interfaz aplicando acciones para:
+\begin{itemize}
+    \item Leer la descripción y auditar los archivos cargados por el estudiante emisor.
+    \item Descargar y examinar los soportes digitales vinculados.
+    \item Digitar anotaciones u observaciones aclaratorias.
+    \item Invocar los métodos para cambiar el estado del trámite en revisión.
+\end{itemize}
+
+\subsection{Cambiar estado de una solicitud}
+
+La modificación del estado de una solicitud se realiza mediante un componente modal interactivo que asegura la consistencia de los datos en la base de datos.
+
+\screenshotfigure
+{assets/admin-request-change-state.png}
+{Modal para cambiar estado de solicitud}
+{Se observa el modal administrativo utilizado para seleccionar y confirmar el nuevo estado de una solicitud.}
+{fig:admin-request-change-state}
+
+Las transiciones del ciclo de vida permiten mutar el estado del proceso hacia valores terminados como aprobada, rechazada o anulada, notificando el cambio de forma automática en la vista del estudiante.
+
+\subsection{Gestión de estudiantes}
+
+Módulo encargado del mantenimiento y consulta de la colección de objetos que representan la base de datos de los alumnos registrados en el sistema.
+
+\screenshotfigure
+{assets/admin-students.png}
+{Listado de estudiantes}
+{Se observa el listado de estudiantes registrados en el sistema con sus datos principales y opciones administrativas.}
+{fig:admin-students}
+
+La grilla administrativa provee herramientas para:
+\begin{itemize}
+    \item Consultar los atributos individuales de las cuentas de estudiantes inscritos.
+    \item Aplicar filtros de búsqueda sobre registros nominales o correos institucionales.
+    \item Activar ventanas de soporte técnico para restaurar accesos de cuentas comprometidas.
+\end{itemize}
+
+\subsection{Restablecer contraseña de estudiante}
+
+Interfaz de control dedicada a auxiliar a los estudiantes que presenten incidentes con sus contraseñas criptográficas de acceso.
+
+\screenshotfigure
+{assets/admin-student-reset-modal.png}
+{Modal para restablecer contraseña de estudiante}
+{Se observa el modal administrativo usado para confirmar el restablecimiento de contraseña de un estudiante.}
+{fig:admin-student-reset-modal}
+
+Este método administrativo altera de manera directa el atributo de seguridad del registro del estudiante, asignándole un token o contraseña provisional única que le permita recuperar el control de su panel.
+
+\subsection{Gestión de administradores}
+
+Módulo enfocado en la administración, creación y control de accesos de las diferentes cuentas de usuarios con roles y permisos administrativos especiales.
+
+\screenshotfigure
+{assets/admin-users.png}
+{Gestión de administradores}
+{Se observa la pantalla de gestión de usuarios administradores con opciones de creación, edición y control de acceso.}
+{fig:admin-users}
+
+\Needspace{6\baselineskip}
+Las propiedades de este submódulo de seguridad permiten:
+\begin{itemize}
+    \item Registrar y dar de alta nuevas instancias de administradores en el sistema.
+    \item Modificar los datos básicos y de identificación de los funcionarios.
+    \item Asignar roles operativos específicos (\code{SuperAdmin}, \code{Admin}, \code{Secretaria}).
+    \item Suspender o habilitar el estado lógico de los accesos de las cuentas.
+\end{itemize}
+
+\subsection{Gestión de tipos de solicitud}
+
+Este catálogo maestro agrupa y define las categorías funcionales de los trámites que los estudiantes están autorizados a crear.
+
+\screenshotfigure
+{assets/admin-request-types.png}
+{Listado de tipos de solicitud}
+{Se observa el listado de tipos de solicitud configurados en el sistema.}
+{fig:admin-request-types}
+
+La pantalla permite al personal de gestión:
+\begin{itemize}
+    \item Listar los tipos de trámites disponibles actualmente en la plataforma.
+    \item Actualizar las propiedades descriptivas de las categorías existentes.
+    \item Activar o pausar la visibilidad de los tipos de trámites mediante interruptores lógicos.
+\end{itemize}
+
+\subsection{Crear nuevo tipo de solicitud}
+
+Formulario diseñado para registrar una nueva categoría de trámite dentro del catálogo institucional.
+
+\screenshotfigure
+{assets/admin-request-types-new.png}
+{Formulario de nuevo tipo de solicitud}
+{Se observa el formulario administrativo para registrar un nuevo tipo de solicitud académica.}
+{fig:admin-request-types-new}
+
+Pasos para registrar una categoría nueva:
+\begin{enumerate}
+    \item Seleccione el comando de acción \textbf{Nuevo tipo de solicitud}.
+    \item Introduzca el nombre formal asignado al trámite académico.
+    \item Digite una descripción detallada que oriente al estudiante en su uso.
+    \item Establezca los parámetros operativos y tiempos máximos de atención exigidos.
+    \item Guarde el registro para instanciar el nuevo tipo en el sistema.
+\end{enumerate}
+
+\subsection{Gestión de programas académicos}
+
+Módulo encargado de controlar la lista maestra de las carreras y planes de estudio ofrecidos por la institución FESC.
+
+\screenshotfigure
+{assets/admin-programs.png}
+{Gestión de programas académicos}
+{Se observa la pantalla de administración de programas académicos registrados en el sistema.}
+{fig:admin-programs}
+
+Este componente provee los métodos requeridos para:
+\begin{itemize}
+    \item Registrar nuevos programas de formación profesional.
+    \item Actualizar los nombres o códigos internos de las carreras vigentes.
+    \item Pausar la disponibilidad de los programas que no admitan nuevas matrículas.
+\end{itemize}
+
+\subsection{Reportes administrativos}
+
+Módulo analítico encargado de procesar arreglos y colecciones masivas de datos para expresar balances y estadísticas sobre el rendimiento de la atención.
+
+\twoscreenshotfigure
+{assets/admin-reports-1.png}
+{assets/admin-reports-2.png}
+{Pantalla de reportes con filtros}
+{Se observa la pantalla de reportes administrativos con filtros por fechas, estados o tipos de solicitud.}
+{fig:admin-reports-1}
+{fig:admin-reports-2}
+
+El entorno de procesamiento facilita a los directivos:
+\begin{itemize}
+    \item Consultar balances estadísticos integrales sobre la plataforma.
+    \item Agrupar las solicitudes atendidas en un periodo de tiempo determinado.
+    \item Evaluar el volumen de trámites resueltos frente a los casos rechazados o anulados.
+    \item Extraer métricas de gestión como soporte en la toma de decisiones institucionales.
+\end{itemize}
+
+\subsection{Perfil del administrador}
+
+Sección dedicada a reflejar las propiedades inmutables y de identificación asociadas a la cuenta del funcionario autenticado.
+
+\screenshotfigure
+{assets/admin-profile.png}
+{Perfil del administrador}
+{Se observa la página de perfil del administrador con sus datos principales y rol dentro del sistema.}
+{fig:admin-profile}
+
+La pantalla expone de forma directa la siguiente información:
+\begin{itemize}
+    \item Nombre de pila completo del administrador asignado.
+    \item Dirección de correo electrónico corporativo de autenticación única.
+    \item Nivel de permisos o rol que rige sus métodos habilitados en la interfaz.
+\end{itemize}
+
+\subsection{Cerrar sesión como administrador}
+
+Invalida y destruye el token de sesión de la cuenta administrativa actual en el contenedor de servlets, protegiendo los accesos a los módulos de control e impidiendo intrusiones en el sistema.
+
+% ==================================================================
+% ADVERTENCIAS Y BUENAS PRÁCTICAS
+% ==================================================================
+\section{Advertencias y Buenas Prácticas}
+% ==================================================================
+
+Con el propósito de resguardar la seguridad de la información y asegurar el correcto rendimiento del software, se listan las siguientes directrices obligatorias:
+\begin{itemize}
+    \item Realice una revisión detallada de todos los datos incluidos en el formulario antes de mandar una solicitud al sistema de forma definitiva.
+    \item Queda estrictamente prohibido compartir las credenciales de ingreso; cada usuario opera con un identificador inmutable único en las bitácoras.
+    \item Cargue únicamente archivos complementarios en formatos válidos que cumplan con las directrices y extensiones explícitas especificadas en las reglas del negocio.
+    \item Cierre la sesión activa inmediatamente al concluir sus actividades operativas en la plataforma para evitar accesos no autorizados en terminales compartidas.
+    \item No solicite la depuración o eliminación física de tuplas de datos viejas; el sistema demanda conservar los registros inalterados para auditorías de trazabilidad relacional.
+    \item Administre los accesos del panel de gestión exclusivamente desde computadores de confianza que cuenten con conexiones seguras.
+\end{itemize}
+
+% ==================================================================
+\section{Preguntas Frecuentes}
+% ==================================================================
+
+\subsection*{¿Cómo ingreso al sistema?}
+\addcontentsline{toc}{subsection}{¿Cómo ingreso al sistema?}
+Debe acceder digitando su correo electrónico institucional verificado y su contraseña segura a través de los componentes visuales de la ventana de inicio de sesión.
+
+\subsection*{¿Qué hago si olvidé mi contraseña?}
+\addcontentsline{toc}{subsection}{¿Qué hago si olvidé mi contraseña?}
+Haga uso de la función de recuperación de contraseña disponible en el login o diríjase con el equipo de soporte técnico para iniciar el restablecimiento seguro de la propiedad clave.
+
+\subsection*{¿Cómo registro una nueva solicitud?}
+\addcontentsline{toc}{subsection}{¿Cómo registro una nueva solicitud?}
+Ingrese a su panel de Estudiante, active el comando para añadir una nueva solicitud, complete los parámetros requeridos por el formulario de radicación y envíelo.
+
+\subsection*{¿Puedo editar una solicitud enviada?}
+\addcontentsline{toc}{subsection}{¿Puedo editar una solicitud enviada?}
+Sí, siempre que el estado de la instancia lo permita y permanezca en su fase inicial. Si el objeto ya fue tomado por un revisor administrativo, el método de edición se bloqueará automáticamente.
+
+\subsection*{¿Cómo reviso el estado de mi solicitud?}
+\addcontentsline{toc}{subsection}{¿Cómo reviso el estado de mi solicitud?}
+Consulte su listado de solicitudes radicadas y seleccione el registro deseado para desplegar la pantalla con el detalle de las propiedades y fases del trámite.
+
+\subsection*{¿Qué puede hacer el administrador?}
+\addcontentsline{toc}{subsection}{¿Qué puede hacer el administrador?}
+La clase Administrador está facultada para invocar métodos que permitan evaluar solicitudes, inyectar respuestas escritas, mutar estados de procesos, auditar colecciones de estudiantes, alterar roles y extraer estadísticas mediante reportes.
+
+% ==================================================================
+% GLOSARIO (Tabla de Alta Estética Estilo Booktabs)
+% ==================================================================
+\section{Glosario}
+\addcontentsline{toc}{section}{Glosario}
+
+\Needspace{8\baselineskip}
+\begin{longtable}{L{0.30\textwidth}L{0.63\textwidth}}
+\caption{Glosario de términos del sistema}\\
+\toprule
+\textbf{Término} & \textbf{Definición Operacional en el Paradigma de Objetos} \\
+\midrule
+Solicitud académica & Instancia u objeto de datos que encapsula las propiedades de un trámite formal radicado por un estudiante. \\
+Estudiante & Objeto de usuario habilitado con métodos específicos para crear y dar seguimiento a solicitudes dentro de su espacio de memoria. \\
+Administrador & Instancia con privilegios de ejecución jerárquicos capacitada para modificar estados de solicitudes, gestionar catálogos y alterar variables. \\
+Estado & Variable de control que determina la fase actual de una solicitud dentro de su flujo de ciclo de vida programado. \\
+Tipo de solicitud & Abstracción utilizada para clasificar los trámites y parametrizar las reglas de respuesta aplicadas en los controladores. \\
+Formulario & Componente visual encargado de interceptar y estructurar los parámetros del cliente para mapearlos en objetos de persistencia. \\
+Reporte & Consolidado analítico que procesa colecciones masivas de datos para su visualización o exportación en formatos planos. \\
+Archivo adjunto & Recurso digital binario persistido en un directorio dedicado y enlazado a un objeto a través de un atributo de ruta de texto. \\
+Perfil & Vista encargada de leer y reflejar los atributos privados encapsulados de una instancia de usuario autenticada. \\
+Credenciales & Atributos de validación seguros obligatorios para invocar con éxito el método de creación de sesión en la aplicación. \\
+\bottomrule
+\end{longtable}
+
+\end{document}

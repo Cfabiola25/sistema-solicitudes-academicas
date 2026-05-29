@@ -1,0 +1,948 @@
+\documentclass[12pt,letterpaper]{article}
+
+% -------------------------------------------------
+% Formato general tipo APA 7.ª edición
+% -------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-tabla]{babel}
+
+% Configuración para usar Helvetica (clon directo de Arial) en TODO el documento
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\shorthandoff{"}
+
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{indentfirst}
+\usepackage[table]{xcolor}
+\usepackage{hyperref}
+\usepackage{xurl}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{needspace}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{ragged2e}
+\usepackage{float}
+\usepackage{etoolbox}
+\usepackage{tocloft}
+
+% -------------------------------------------------
+% Mejora visual de tablas y figuras
+% -------------------------------------------------
+\definecolor{tableStripe}{HTML}{F2F4F7}
+\renewcommand{\arraystretch}{1.20}
+\setlength{\arrayrulewidth}{0.8pt}
+\setlength{\tabcolsep}{8pt}
+\setlength{\LTpre}{0.5em}
+\setlength{\LTpost}{0.5em}
+
+% Se fuerza a que el título autogenerado de tablas y figuras quede ARRIBA
+\captionsetup[table]{font={small,sf},labelfont=bf,position=above,skip=6pt}
+\captionsetup[figure]{font={small,sf},labelfont=bf,position=above,skip=6pt}
+
+\AtBeginEnvironment{longtable}{%
+  \setlength{\tabcolsep}{5pt}%
+  \rowcolors{2}{tableStripe}{white}%
+}
+
+% Márgenes APA
+\geometry{margin=1in}
+\setlength{\headheight}{15pt}
+
+% Interlineado
+\doublespacing
+
+% Sangría
+\setlength{\parindent}{0.5in}
+\setlength{\parskip}{0pt}
+
+% Formateo estricto de listas bajo estándares tipográficos
+\setlist[itemize]{leftmargin=0.5in, topsep=0pt, partopsep=0pt, parsep=0pt, itemsep=4pt}
+\setlist[enumerate]{leftmargin=0.5in, topsep=0pt, partopsep=0pt, parsep=0pt, itemsep=4pt}
+
+% Alineación APA
+\raggedright
+
+% -------------------------------------------------
+% Encabezado y numeración
+% -------------------------------------------------
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+
+% -------------------------------------------------
+% Colores y enlaces
+% -------------------------------------------------
+\definecolor{apaBlue}{HTML}{1F4E79}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    urlcolor=apaBlue,
+    citecolor=black,
+    pdftitle={Manual de Código: Solicitudes Académicas FESC},
+    pdfauthor={Desarrolladores FESC}
+}
+
+% -------------------------------------------------
+% Jerarquía de títulos (Todos en tamaño 12pt / \normalsize)
+% -------------------------------------------------
+\titleformat{\section}
+  {\normalfont\bfseries\normalsize}
+  {\thesection.}{0.5em}{}
+
+\titleformat{\subsection}
+  {\normalfont\bfseries\normalsize}
+  {\thesubsection}{0.5em}{}
+
+\titleformat{\subsubsection}
+  {\normalfont\bfseries\itshape\normalsize}
+  {\thesubsubsection}{0.5em}{}
+
+\titlespacing*{\section}{0pt}{1.5em}{1em}
+\titlespacing*{\subsection}{0pt}{1.2em}{0.8em}
+\titlespacing*{\subsubsection}{0pt}{1em}{0.6em}
+
+% Cada capítulo inicia en hoja nueva de manera limpia
+\pretocmd{\section}{\clearpage}{}{}
+
+% -------------------------------------------------
+% Código fuente (SIN CUADROS, SIN FONDO, FUENTE ARIAL/HELVETICA TAMAÑO 12)
+% -------------------------------------------------
+\lstdefinelanguage{typescript}{
+    keywords={const,let,var,function,return,export,import,from,type,interface,extends,if,else,await,async,null,true,false,default,new,class},
+    sensitive=true,
+    comment=[l]{//},
+    morecomment=[s]{/*}{*/},
+    morestring=[b]',
+    morestring=[b]",
+    morestring=[b]`
+}
+
+\lstdefinestyle{codeblock}{
+    backgroundcolor=\color{white},
+    frame=none,
+    basicstyle=\normalfont\normalsize,
+    breaklines=true,
+    breakatwhitespace=false,
+    columns=fullflexible,
+    keepspaces=true,
+    showstringspaces=false,
+    literate={á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+             {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+             {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {ü}{{\"u}}1 {Ü}{{\"U}}1
+             {→}{{$\to$}}1 {≥}{{$\geq$}}1 {≤}{{$\leq$}}1,
+    tabsize=2
+}
+\lstset{style=codeblock}
+
+% Comando seguro para imprimir nombres técnicos con guiones bajos sin romper el entorno matemático
+\newcommand{\code}[1]{\texorpdfstring{\begingroup\normalfont\normalsize\def\_{\textunderscore\allowbreak}#1\endgroup}{#1}}
+
+% -------------------------------------------------
+% Figuras Corregidas: Nombre arriba (vía caption), imagen, descripción abajo
+% -------------------------------------------------
+\newcommand{\diagramfigurehere}[4]{%
+\begin{figure}[H]
+\centering
+\caption{#2}
+\label{#4}
+\vspace{0.2cm}
+
+\IfFileExists{#1}{%
+    \includegraphics[width=0.9\textwidth,height=0.65\textheight,keepaspectratio]{#1}%
+}{%
+    \fbox{%
+        \begin{minipage}[c][2.5in][c]{0.88\textwidth}
+        \centering
+        \textbf{Espacio reservado para el diagrama}\\[0.5em]
+        Inserta aquí la imagen correspondiente en la ruta:\\[0.3em]
+        \texttt{#1}
+        \end{minipage}%
+    }%
+}
+
+\vspace{0.2cm}
+{\small \textit{Descripción de la figura: #3}}
+\end{figure}
+}
+
+\newcommand{\diagramfigurefullpage}[4]{%
+\begin{figure}[H]
+\centering
+\caption{#2}
+\label{#4}
+\vspace{0.2cm}
+
+\IfFileExists{#1}{%
+    \includegraphics[width=\textwidth,height=0.82\textheight,keepaspectratio]{#1}%
+}{%
+    \fbox{%
+        \begin{minipage}[c][4in][c]{0.95\textwidth}
+        \centering
+        \textbf{Espacio reservado para el diagrama}\\[0.5em]
+        Inserta aquí la imagen correspondiente en la ruta:\\[0.3em]
+        \texttt{#1}
+        \end{minipage}%
+    }%
+}
+
+\vspace{0.2cm}
+{\small \textit{Descripción de la figura: #3}}
+\end{figure}
+}
+
+\begin{document}
+
+% ==================================================================
+% PORTADA ACTUALIZADA
+% ==================================================================
+\begin{titlepage}
+    \centering
+    \vspace*{0.5in}
+
+    % 1. Nombres completos de los estudiantes actualizados
+    {\normalsize\bfseries
+    Laura Valentina Rozzo Espinel\\
+    Nelly Fabiola Cano Oviedo\\
+    Nestor Ivan Granados Valenzuela\\
+    Nick Alejandro Ortega Mendez\\
+    Santiago Alejandro Medina Ortega\\
+    Valery Gabriela Alarcon Peña
+    \par}
+    \vspace{0.6in}
+
+    % 2. Programa académico
+    {\normalsize Ingeniería de Software \par}
+    \vspace{0.4in}
+
+    % 3. Nombre completo de la FESC
+    {\normalsize Fundación de Estudios Superiores Comfanorte (FESC) \par}
+    \vspace{0.6in}
+
+    % 4. Nombre de la asignatura
+    {\normalsize\bfseries Programación Orientada a Objetos \par}
+    \vspace{0.4in}
+
+    % 5. Identificación del Proyecto (PPA) y Título del Documento
+    {\normalsize Proyecto Pedagógico de Aula (PPA) \par}
+    \vspace{0.5in}
+    {\normalsize\bfseries MANUAL DE CÓDIGO:\ SISTEMA DE SOLICITUDES ACADÉMICAS FESC\par}
+    \vspace{0.6in}
+
+    % 6. Nombre completo del docente actualizado
+    {\normalsize Ing. Angel Ureña \par}
+
+    \vfill
+    {\normalsize San José de Cúcuta, Mayo de 2026 \par}
+\end{titlepage}
+
+\newpage
+\tableofcontents
+
+\newpage
+\addcontentsline{toc}{section}{Índice de tablas}
+\listoftables
+
+\newpage
+\addcontentsline{toc}{section}{Índice de figuras}
+\listoffigures
+
+% =================================================
+\section*{Introducción}
+\addcontentsline{toc}{section}{Introducción}
+% =================================================
+
+El presente manual de código documenta la arquitectura, los componentes principales, las convenciones y el flujo de trabajo del proyecto \textbf{Sistema de Solicitudes Académicas FESC}. El sistema es una aplicación web desarrollada en Java EE con servlets, JSP, MySQL y Apache Tomcat, orientada a la gestión de solicitudes académicas de estudiantes y la administración de trámites internos.
+
+El documento está dirigido a desarrolladores e integradores del proyecto, con la finalidad de facilitar el mantenimiento, la extensión y el despliegue correcto de la solución. Incluye la descripción de la estructura de carpetas, rutas, configuración local, lógica principal, estándares de código, persistencia y los diagramas necesarios para visualización arquitectónica.
+
+% =================================================
+\section{Visión General}
+% =================================================
+
+Este sistema gestiona el ciclo completo de solicitudes académicas de los estudiantes, desde el registro y autenticación, hasta la aprobación, seguimiento y auditoría de retrasos por parte de los administradores. La aplicación separa claramente las áreas de estudiante y administrador, y utiliza un backend Java que se comunica con una base de datos MySQL a través de JDBC.
+
+\Needspace{6\baselineskip}
+\begin{longtable}{|>{\bfseries}p{0.25\textwidth}|p{0.65\textwidth}|}
+\caption{Áreas principales del sistema}\\
+\hline
+Área & Descripción \\
+\hline
+Portal de estudiante & Permite a los estudiantes autenticarse, ver su perfil, crear solicitudes, consultar su estado y recibir mensajes de seguimiento. \\
+\hline
+Panel administrativo & Permite a los administradores gestionar estudiantes, programas, solicitudes, tipos de solicitud, responsables asignados y generar reportes. \\
+\hline
+Infraestructura de datos & Base de datos MySQL que almacena sedes, jornadas, programas académicos, estudiantes, administradores, solicitudes, mensajes y auditorías. \\
+\hline
+\end{longtable}
+
+La aplicación se ejecuta en un contenedor Java EE compatible (Apache Tomcat) y utiliza JSP para renderizar vistas, servlets para manejar la lógica HTTP y un DAO centralizado para el acceso a datos.
+
+\subsection*{Flujo de datos de alto nivel}
+
+\diagramfigurehere
+{diagramas/flujo-datos-alto-nivel.png}
+{Flujo de datos de alto nivel del sistema}
+{Relación entre el navegador, los servlets Java, el conjunto de JSP, la capa DAO y la base de datos MySQL.}
+{fig:flujo-datos-alto-nivel}
+
+% =================================================
+\section{Stack Tecnológico}
+% =================================================
+
+Esta sección describe las tecnologías y herramientas usadas en el proyecto real.
+
+\subsection{Tecnologías principales}
+
+\Needspace{8\baselineskip}
+\begin{longtable}{|p{0.32\textwidth}|p{0.18\textwidth}|p{0.40\textwidth}|}
+\caption{Tecnologías principales del proyecto}\\
+\hline
+\textbf{Tecnología} & \textbf{Versión / Tipo} & \textbf{Uso} \\
+\hline
+Java SE & 8+ & Lenguaje de programación backend y lógica de negocio. \\
+\hline
+Java Servlet & 3.1 & Gestión de peticiones HTTP y controladores. \\
+\hline
+JSP & 2.x & Vistas dinámicas del frontend. \\
+\hline
+MySQL / MariaDB & 8.x recomendado & Motor de base de datos relacional. \\
+\hline
+JDBC & MySQL Connector/J & Conexión entre la aplicación Java y la base de datos. \\
+\hline
+Apache Tomcat & 8.x / 9.x & Contenedor de servlets para despliegue. \\
+\hline
+Apache Ant & 1.10+ & Herramienta de construcción y empaquetado. \\
+\hline
+NetBeans & IDE compatible & Desarrollo y ejecución del proyecto Java EE. \\
+\hline
+\end{longtable}
+
+\subsection{Herramientas de desarrollo}
+
+\Needspace{6\baselineskip}
+\begin{longtable}{|p{0.32\textwidth}|p{0.18\textwidth}|p{0.40\textwidth}|}
+\caption{Herramientas de desarrollo utilizadas}\\
+\hline
+\textbf{Herramienta} & \textbf{Versión / Uso} & \textbf{Descripción} \\
+\hline
+Apache Ant & Build tool & Compila el código, copia recursos y genera el despliegue. \\
+\hline
+NetBeans & IDE Java EE & Entorno de desarrollo y ejecución con soporte Tomcat. \\
+\hline
+MySQL Workbench / cliente SQL & Administración de BD & Gestión de esquema y datos. \\
+\hline
+VS Code & Editor de código & Edición de archivos y configuración opcional de tareas Ant. \\
+\hline
+\end{longtable}
+
+% =================================================
+\section{Arquitectura del Proyecto}
+% =================================================
+
+La arquitectura del proyecto está organizada en capas ligeras: presentación JSP, controladores servlet, acceso a datos DAO, modelos de datos y utilidades. El frontend se compone de archivos JSP y recursos estáticos bajo la carpeta \code{web/}, mientras que el backend Java reside en \code{src/java/}.
+
+\subsection{Estructura de carpetas}
+
+\Needspace{10\baselineskip}
+\begin{lstlisting}[language={}] 
+solicitudes-academicas/
+|---- build.xml
+|---- README.md
+|---- docs/
+|    |---- INSTRUCCIONES_CONFIGURACION.md
+|---- nbproject/
+|---- sql/
+|    `---- database.sql
+|---- src/
+|    `---- java/
+|        |---- controller/
+|        |---- dao/
+|        |---- filter/
+|        |---- model/
+|        |---- util/
+|        |---- database.properties.example
+|        `---- database.properties
+|---- web/
+|    |---- WEB-INF/
+|    |    |---- web.xml
+|    |    `---- classes/
+|    |---- admin/
+|    |---- student/
+|    |---- assets/
+`---- tmp-classes/
+\end{lstlisting}
+
+\subsection{Organización interna de paquetes}
+
+\Needspace{6\baselineskip}
+\begin{lstlisting}[language={}]
+src/java/
+|---- controller/    # Servlets que reciben peticiones y redirigen a vistas
+|---- dao/           # Acceso a datos y operaciones contra MySQL
+|---- model/         # Objetos de dominio que representan tablas
+|---- util/          # Utilidades compartidas como hashing y conexion DB
+|---- filter/        # Filtros HTTP para comportamiento transversal
+\end{lstlisting}
+
+\subsection{Diagrama de módulos y dependencias}
+
+\diagramfigurehere
+{diagramas/modulos-y-dependencias.png}
+{Diagrama de módulos y dependencias del proyecto}
+{Relación entre los componentes de presentación, controladores, DAO, modelos y utilidades Java.}
+{fig:modulos-dependencias}
+
+\subsection{Sistema de rutas}
+
+Estas son las rutas principales definidas en los servlets del proyecto.
+
+\Needspace{12\baselineskip}
+\begin{longtable}{|p{0.32\textwidth}|p{0.38\textwidth}|p{0.18\textwidth}|}
+\caption{Rutas principales del sistema}\\
+\hline
+\textbf{Ruta} & \textbf{Servlet} & \textbf{Protegida} \\
+\hline
+\code{/login} & \code{LoginServlet} & No \\
+\hline
+\code{/register} & \code{RegisterServlet} & No \\
+\hline
+\code{/forgot-password} & \code{ForgotPasswordServlet} & No \\
+\hline
+\code{/recover-password} & \code{RecoverPasswordServlet} & No \\
+\hline
+\code{/logout} & \code{LogoutServlet} & Sí \\
+\hline
+\code{/student/dashboard} & \code{StudentDashboardServlet} & Sí \\
+\hline
+\code{/student/profile} & \code{StudentProfileServlet} & Sí \\
+\hline
+\code{/student/requests} & \code{MyRequestsServlet} & Sí \\
+\hline
+\code{/student/request-detail} & \code{RequestDetailServlet} & Sí \\
+\hline
+\code{/student/new-request} & \code{NewRequestServlet} & Sí \\
+\hline
+\code{/student/edit-request} & \code{EditRequestServlet} & Sí \\
+\hline
+\code{/student/cancel-request} & \code{CancelRequestServlet} & Sí \\
+\hline
+\code{/admin/dashboard} & \code{AdminDashboardServlet} & Sí \\
+\hline
+\code{/admin/profile} & \code{AdminProfileServlet} & Sí \\
+\hline
+\code{/admin/admin-users} & \code{AdminUsersServlet} & Sí \\
+\hline
+\code{/admin/students} & \code{AdminStudentsServlet} & Sí \\
+\hline
+\code{/admin/programs} & \code{AdminProgramsServlet} & Sí \\
+\hline
+\code{/admin/request-types} & \code{AdminRequestTypesServlet} & Sí \\
+\hline
+\code{/admin/requests} & \code{AdminRequestsServlet} & Sí \\
+\hline
+\code{/admin/request-detail} & \code{AdminRequestDetailServlet} & Sí \\
+\hline
+\code{/admin/reports} & \code{AdminReportsServlet} & Sí \\
+\hline
+\end{longtable}
+
+% =================================================
+\section{Guía de Configuración}
+% =================================================
+
+Esta sección describe los requisitos y pasos para instalar, configurar y ejecutar el sistema en un entorno local de desarrollo.
+
+\subsection{Prerrequisitos}
+
+Antes de ejecutar el sistema, el equipo debe contar con:
+
+\begin{itemize}
+    \item Java JDK 8 o superior.
+    \item Apache Tomcat instalado localmente.
+    \item MySQL o MariaDB con la base de datos \code{fesc\_solicitudes}.
+    \item Apache Ant para compilar y empaquetar el proyecto.
+\end{itemize}
+
+\subsection{Instalación paso a paso}
+
+\Needspace{10\baselineskip}
+\begin{lstlisting}[language=bash]
+# 1. Clonar el repositorio
+git clone <url-del-repo>
+cd solicitudes-academicas
+
+# 2. Crear archivo de configuracion local
+cp src/java/database.properties.example src/java/database.properties
+
+# 3. Ajustar credenciales MySQL
+# Editar src/java/database.properties
+
+# 4. Compilar con Ant
+ant clean
+ant
+
+# 5. Desplegar en Tomcat
+# Copiar WAR o carpeta compilada a TOMCAT_HOME/webapps/
+\end{lstlisting}
+
+\subsection{Variables de entorno y configuración de DB}
+
+El archivo \code{src/java/database.properties} contiene los parámetros de conexión a MySQL:
+
+\Needspace{4\baselineskip}
+\begin{lstlisting}[language={}]
+db.url=jdbc:mysql://localhost:3306/fesc_solicitudes?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Bogota
+db.user=root
+db.password=TU_CONTRASENA
+\end{lstlisting}
+
+Este archivo no debe subirse al repositorio; el archivo \code{database.properties.example} sirve como plantilla.
+
+\subsection{Scripts disponibles}
+
+\Needspace{5\baselineskip}
+\begin{longtable}{|p{0.22\textwidth}|p{0.28\textwidth}|p{0.40\textwidth}|}
+\caption{Scripts disponibles en el proyecto}\\
+\hline
+\textbf{Script} & \textbf{Comando} & \textbf{Descripción} \\
+\hline
+Clean & \code{ant clean} & Elimina artefactos de compilación previos. \\
+\hline
+Build & \code{ant} & Compila el proyecto y genera la salida de despliegue. \\
+\hline
+\end{longtable}
+
+% =================================================
+\section{Documentación de Lógica Principal}
+% =================================================
+
+Esta sección documenta los archivos y procesos más relevantes del código Java.
+
+\subsection{\texorpdfstring{\code{src/java/dao/DBConnection.java}}{src/java/dao/DBConnection.java}}
+
+Este archivo centraliza la conexión JDBC con MySQL. Lee \code{database.properties} de la ruta de clases y carga el driver \code{com.mysql.cj.jdbc.Driver}.
+
+\Needspace{4\baselineskip}
+\begin{lstlisting}[language=java]
+public static Connection getConnection() throws SQLException {
+    return DriverManager.getConnection(URL, USER, PASSWORD);
+}
+\end{lstlisting}
+
+La regla principal es mantener una sola fuente de verdad para la conexión y no instanciar drivers en múltiples clases.
+
+\subsection{\texorpdfstring{\code{src/java/util/PasswordHasher.java}}{src/java/util/PasswordHasher.java}}
+
+Este helper gestiona el hashing seguro de contraseñas usando SHA-256 y una sal Base64.
+
+\Needspace{4\baselineskip}
+\begin{lstlisting}[language=java]
+public static String secureHash(String password) {
+    String salt = generateSalt();
+    String hash = hashPassword(password, salt);
+    return salt + ":" + hash;
+}
+\end{lstlisting}
+
+\subsection{Acceso a datos: DAOs principales}
+
+Los DAOs contienen la lógica de lectura y escritura contra MySQL. Entre los más importantes están:
+
+\begin{itemize}
+    \item \code{AdminDAO.java}
+    \item \code{StudentDAO.java}
+    \item \code{SolicitudMensajeDAO.java}
+    \item \code{TipoSolicitudDAO.java}
+    \item \code{ProgramaAcademicoDAO.java}
+\end{itemize}
+
+Estos archivos encapsulan consultas SQL y mapeos entre resultados y objetos de dominio.
+
+\subsection{Servicio de solicitudes}
+
+Ubicación principal: \code{src/java/controller/} y \code{src/java/dao/}.
+
+El flujo principal de solicitudes académicas sigue estos pasos:
+
+\begin{enumerate}
+    \item El estudiante envía un formulario a \code{NewRequestServlet}.
+    \item El servlet valida campos y crea el registro en \code{solicitud} mediante \code{StudentDAO}.
+    \item El administrador revisa la solicitud en \code{AdminRequestsServlet}.
+    \item Las respuestas y el responsable se actualizan en \code{solicitud} mediante \code{AdminRequestDetailServlet}.
+    \item El historial se registra en \code{solicitud\_mensaje} y \code{auditoria\_retraso}.
+\end{enumerate}
+
+\subsection*{Flujo de estados del formulario de solicitud}
+
+\diagramfigurehere
+{diagramas/estado-formulario-solicitud.png}
+{Diagrama de estados del formulario de solicitud}
+{Transición de estados del formulario de creación/edición de solicitud desde la carga inicial hasta el envío y manejo de errores.}
+{fig:estado-formulario-solicitud}
+
+\subsection{Protección de rutas y sesiones}
+
+La aplicación utiliza filtros y sesiones HTTP para proteger el acceso a rutas administrativas y de estudiante. El servlet de logout cierra la sesión activa.
+
+\subsubsection*{Flujo de autenticación}
+
+\diagramfigurehere
+{diagramas/flujo-autenticacion.png}
+{Flujo general del módulo de autenticación}
+{Proceso de inicio de sesión, validación de credenciales, creación de sesión y acceso a rutas protegidas.}
+{fig:flujo-autenticacion}
+
+% =================================================
+\section{Estándares de Código}
+% =================================================
+
+Esta sección define las reglas de estilo y organización del código del proyecto actual.
+
+\subsection{Convenciones de nombrado}
+
+\Needspace{10\baselineskip}
+\begin{longtable}{|p{0.30\textwidth}|p{0.30\textwidth}|p{0.30\textwidth}|}
+\caption{Convenciones de nombrado del proyecto}\\
+\hline
+\textbf{Elemento} & \textbf{Convención} & \textbf{Ejemplo} \\
+\hline
+Clases Java & \code{PascalCase} & \code{StudentDAO} \\
+\hline
+Servlets & \code{PascalCase} & \code{LoginServlet} \\
+\hline
+Modelos & \code{PascalCase} & \code{ProgramaAcademico} \\
+\hline
+Métodos & \code{camelCase} & \code{getConnection} \\
+\hline
+Variables locales & \code{camelCase} & \code{studentId} \\
+\hline
+Constantes & \code{UPPER\_SNAKE\_CASE} & \code{DB\_URL} \\
+\hline
+Archivos JSP & \code{kebab-case.jsp} & \code{forgot\_password.jsp} \\
+\hline
+Archivos Java & \code{PascalCase.java} & \code{AdminReportsServlet.java} \\
+\hline
+Propiedades & \code{lowercase.with.dots} & \code{db.url} \\
+\hline
+\end{longtable}
+
+\subsection{Estructura de un servlet}
+
+Un servlet debe mantener un orden claro: inicialización, proceso de petición, delegación al DAO y despacho a JSP.
+
+\Needspace{10\baselineskip}
+\begin{lstlisting}[language=java]
+@WebServlet("/login")
+public class LoginServlet extends HttpServlet {
+  protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+      throws ServletException, IOException {
+    String email = req.getParameter("email");
+    String password = req.getParameter("password");
+
+    // Validar credenciales
+    // Consultar StudentDAO / AdminDAO
+    // Crear sesion
+    // Redirigir a la pagina correspondiente
+  }
+}
+\end{lstlisting}
+
+\subsection{Manejo de excepciones}
+
+Las excepciones SQL y de IO deben capturarse en el DAO o utilitario, y traducirse a mensajes controlados para el usuario o al log.
+
+\subsection{Buenas prácticas de SQL}
+
+\begin{itemize}
+    \item Usar sentencias preparadas (\code{PreparedStatement}) en DAO para evitar inyección SQL.
+    \item Mantener las consultas SQL en métodos específicos del DAO.
+    \item Cerrar conexiones en bloques \code{try-with-resources}.
+\end{itemize}
+
+% =================================================
+\section{Flujo de Trabajo}
+% =================================================
+
+Esta sección describe los procedimientos de desarrollo, extensión y publicación de cambios en el proyecto.
+
+\subsection{Añadir una nueva funcionalidad de solicitud}
+
+\Needspace{8\baselineskip}
+\begin{lstlisting}[language={}]
+1. Crear o actualizar la tabla SQL en sql/database.sql.
+2. Generar el modelo Java en src/java/model/.
+3. Anadir la logica de acceso en src/java/dao/.
+4. Crear o extender el servlet en src/java/controller/.
+5. Agregar las vistas JSP en web/ o web/student/ o web/admin/.
+6. Probar la funcionalidad en Tomcat.
+\end{lstlisting}
+
+\subsection{Agregar una nueva ruta de servlet}
+
+\begin{enumerate}
+    \item Crear la clase Java en \code{src/java/controller/}.
+    \item Anotar con \code{@WebServlet(name = "...", urlPatterns = {"/ruta"})}.
+    \item Implementar \code{doGet} y/o \code{doPost}.
+    \item Crear la vista JSP necesaria.
+    \item Actualizar el menú o los enlaces de navegación.
+\end{enumerate}
+
+\subsection{Control de versiones}
+
+\Needspace{5\baselineskip}
+\begin{lstlisting}[language={}]
+feature/alta-solicitud
+fix/login-seguridad
+chore/actualizar-configuracion-db
+docs/manual-codigo
+\end{lstlisting}
+
+% =================================================
+\section{Persistencia y Base de Datos}
+% =================================================
+
+El proyecto utiliza un esquema MySQL que define tablas maestras de sedes, jornadas y programas, además de tablas de usuarios, solicitudes, mensajes y auditoría.
+
+\subsection{Modelo entidad-relación}
+
+\diagramfigurefullpage
+{diagramas/modelo-entidad-relacion.png}
+{Modelo entidad-relación de la base de datos del sistema}
+{Entidades principales del esquema MySQL, sus llaves primarias, llaves foráneas y relaciones de integridad.}
+{fig:modelo-er}
+
+\subsection{Esquema de tablas principales}
+
+La base de datos incluye las siguientes tablas más importantes:
+
+\begin{itemize}
+    \item \code{sede}
+    \item \code{jornada}
+    \item \code{programa\_academico}
+    \item \code{tipo\_solicitud}
+    \item \code{estudiante}
+    \item \code{administrador}
+    \item \code{tipo\_solicitud\_responsable}
+    \item \code{solicitud}
+    \item \code{solicitud\_mensaje}
+    \item \code{auditoria\_retraso}
+\end{itemize}
+
+\subsection{Relaciones clave}
+
+\begin{itemize}
+    \item \code{estudiante.programa\_id} $\rightarrow$ \code{programa\_academico.id}
+    \item \code{estudiante.sede\_id} $\rightarrow$ \code{sede.id}
+    \item \code{estudiante.jornada\_id} $\rightarrow$ \code{jornada.id}
+    \item \code{solicitud.estudiante\_id} $\rightarrow$ \code{estudiante.id}
+    \item \code{solicitud.tipo\_solicitud\_id} $\rightarrow$ \code{tipo\_solicitud.id}
+    \item \code{solicitud.admin\_id} $\rightarrow$ \code{administrador.id}
+    \item \code{solicitud.responsable\_id} $\rightarrow$ \code{administrador.id}
+    \item \code{solicitud\_mensaje.solicitud\_id} $\rightarrow$ \code{solicitud.id}
+    \item \code{auditoria\_retraso.solicitud\_id} $\rightarrow$ \code{solicitud.id}
+    \item \code{auditoria\_retraso.admin\_id} $\rightarrow$ \code{administrador.id}
+\end{itemize}
+
+% =================================================
+\section{Documentación Detallada de Controladores}
+% =================================================
+
+A continuación se documenta la responsabilidad principal de cada servlet (controlador) identificado en el proyecto, su ruta y las interacciones con DAOs y vistas.
+
+\subsection*{LoginServlet}
+\addcontentsline{toc}{subsection}{LoginServlet}
+Ruta: \code{/login}. Archivo: \code{src/java/controller/LoginServlet.java}.
+Responsabilidad: validar credenciales de administrativos y estudiantes (delegando a \code{AdminDAO} o \code{StudentDAO}), crear la sesión HTTP con los atributos de usuario y redirigir al dashboard correspondiente. Maneja mensajes de error por credenciales inválidas.
+
+\subsection*{RegisterServlet}
+\addcontentsline{toc}{subsection}{RegisterServlet}
+Ruta: \code{/register}. Archivo: \code{src/java/controller/RegisterServlet.java}.
+Responsabilidad: validar datos de registro (correo institucional, campos obligatorios), invocar \code{StudentDAO} para persistir el nuevo estudiante y redirigir a la pantalla de login o mostrar errores de validación.
+
+\subsection*{ForgotPasswordServlet / RecoverPasswordServlet}
+\addcontentsline{toc}{subsection}{ForgotPasswordServlet / RecoverPasswordServlet}
+Rutas: \code{/forgot-password}, \code{/recover-password}. Archivos: \code{ForgotPasswordServlet.java}, \code{RecoverPasswordServlet.java}.
+Responsabilidad: generar token de recuperación, almacenar token y expiración en la base de datos (vía \code{StudentDAO} o \code{AdminDAO}), y presentar la lógica para restablecer la contraseña. En la implementación de referencia el enlace se imprime en consola (simulador de email).
+
+\subsection*{LogoutServlet}
+\addcontentsline{toc}{subsection}{LogoutServlet}
+Ruta: \code{/logout}. Archivo: \code{LogoutServlet.java}.
+Responsabilidad: invalidar la sesión HTTP y redirigir a la página de login.
+
+\subsection*{StudentDashboardServlet}
+\addcontentsline{toc}{subsection}{StudentDashboardServlet}
+Ruta: \code{/student/dashboard}. Archivo: \code{StudentDashboardServlet.java}.
+Responsabilidad: recopilar estadísticas y la lista de solicitudes del estudiante (vía \code{StudentDAO} y \code{SolicitudDAO}), y despachar a la vista JSP del dashboard del estudiante.
+
+\subsection*{StudentProfileServlet}
+\addcontentsline{toc}{subsection}{StudentProfileServlet}
+Ruta: \code{/student/profile}. Archivo: \code{StudentProfileServlet.java}.
+Responsabilidad: mostrar y actualizar los datos del estudiante; delega operaciones de persistencia a \code{StudentDAO}.
+
+\subsection*{MyRequestsServlet, NewRequestServlet, RequestDetailServlet, EditRequestServlet, CancelRequestServlet}
+\addcontentsline{toc}{subsection}{MyRequests y gestión de solicitudes}
+Rutas: \code{/student/requests}, \code{/student/new-request}, \code{/student/request-detail}, \code{/student/edit-request}, \code{/student/cancel-request}.
+Responsabilidades:
+\begin{itemize}
+    \item \code{MyRequestsServlet}: listar las solicitudes del estudiante y aplicar filtros.
+    \item \code{NewRequestServlet}: procesar la creación de una solicitud, validar campos y guardar adjuntos en \code{/uploads}; utiliza \code{StudentDAO} o \code{SolicitudDAO} para persistir datos.
+    \item \code{RequestDetailServlet}: presentar detalle de solicitud, mensajes e historial; aceptar subida de archivos en mensajes si aplica.
+    \item \code{EditRequestServlet}: permitir la edición de solicitudes en estados permitidos; aplica validaciones y persiste cambios.
+    \item \code{CancelRequestServlet}: marcar la solicitud como anulada/cancelada y registrar auditoría.
+\end{itemize}
+
+\subsection*{AdminDashboardServlet, AdminRequestsServlet, AdminRequestDetailServlet}
+\addcontentsline{toc}{subsection}{Admin: solicitudes y dashboard}
+Rutas: \code{/admin/dashboard}, \code{/admin/requests}, \code{/admin/request-detail}.
+Responsabilidades: mostrar métricas del sistema, listar solicitudes administrativas con filtros, gestionar el detalle de cada solicitud (cambiar estado, añadir respuesta, subir adjuntos desde admin). \code{AdminRequestDetailServlet} valida tipos de archivo y guarda adjuntos en \code{/uploads/messages}.
+
+\subsection*{AdminUsersServlet, AdminStudentsServlet, AdminProgramsServlet, AdminRequestTypesServlet}
+\addcontentsline{toc}{subsection}{Admin: gestión de recursos}
+Rutas y responsabilidades:
+\begin{itemize}
+    \item \code{AdminUsersServlet}: gestionar cuentas administrativas (crear/editar/eliminar según rol).
+    \item \code{AdminStudentsServlet}: administrar cuentas de estudiantes, buscar, editar y restablecer contraseñas.
+    \item \code{AdminProgramsServlet}: CRUD de programas académicos.
+    \item \code{AdminRequestTypesServlet}: CRUD y activación/desactivación de tipos de solicitud.
+\end{itemize}
+
+\subsection*{AdminReportsServlet}
+\addcontentsline{toc}{subsection}{AdminReportsServlet}
+Ruta: \code{/admin/reports}. Archivo: \code{AdminReportsServlet.java}.
+Responsabilidad: construir vistas y datasets filtrados para reportes, y exportar resultados (CSV/PDF) según la vista.
+
+% =================================================
+\section{Modelos de Dominio}
+% =================================================
+
+Se listan los modelos principales que representan las tablas de la base de datos y su responsabilidad.
+
+\subsection*{Student}
+\addcontentsline{toc}{subsection}{Student}
+Archivo: \code{src/java/model/Student.java}.
+Responsabilidad: encapsular datos de un estudiante (id, nombre, apellido, email, password-hash, programaId, sedeId, jornadaId, etc.) y servir como DTO entre DAO y controladores.
+
+\subsection*{Admin}
+\addcontentsline{toc}{subsection}{Admin}
+Archivo: \code{src/java/model/Admin.java}.
+Responsabilidad: representar cuentas administrativas y sus atributos (id, nombre, email, rol), utilizado en autenticación y asignación de responsabilidades.
+
+\subsection*{Solicitud}
+\addcontentsline{toc}{subsection}{Solicitud}
+Archivo: \code{src/java/model/Solicitud.java}.
+Responsabilidad: representar una solicitud académica con sus campos principales (id, estudianteId, tipoSolicitudId, descripcion, estado, fechaCreacion, fechaActualizacion, adjuntos, responsable, adminAsignado).
+
+\subsection*{SolicitudMensaje}
+\addcontentsline{toc}{subsection}{SolicitudMensaje}
+Archivo: \code{src/java/model/SolicitudMensaje.java}.
+Responsabilidad: modelar mensajes/comentarios asociados a una solicitud (emisor, texto, adjunto, fecha) para mantener histórico de comunicaciones.
+
+\subsection*{TipoSolicitud}
+\addcontentsline{toc}{subsection}{TipoSolicitud}
+Archivo: \code{src/java/model/TipoSolicitud.java}.
+Responsabilidad: representar las categorías de trámites disponibles (nombre, descripción, responsable asignado).
+
+\subsection*{ProgramaAcademico, Sede, Jornada}
+\addcontentsline{toc}{subsection}{ProgramaAcademico / Sede / Jornada}
+Archivos: \code{ProgramaAcademico.java}, \code{Sede.java}, \code{Jornada.java}.
+Responsabilidad: tablas maestras que normales los valores usados en formularios y filtros.
+
+% =================================================
+\section{Patrón MVC y Flujo de Interacciones}
+% =================================================
+
+\subsection{Implementación del patrón MVC}
+
+El proyecto aplica el patrón Modelo-Vista-Controlador (MVC) de forma clásica:
+
+\begin{itemize}
+    \item Modelos: clases en \code{src/java/model/} y DAOs en \code{src/java/dao/} que representan y persisten el estado de la aplicación.
+    \item Vistas: archivos JSP ubicados en \code{web/} que reciben atributos desde los controladores y renderizan HTML.
+    \item Controladores: servlets en \code{src/java/controller/} que procesan peticiones HTTP, validan entrada, invocan DAOs y despachan a JSP.
+\end{itemize}
+
+\subsection{Secuencia típica: creación de una solicitud (request)}
+
+\begin{enumerate}
+    \item El usuario en el navegador completa el formulario y hace POST a \code{/student/new-request}.
+    \item \code{NewRequestServlet} recoge parámetros, valida datos y, si incluye archivo adjunto, llama a utilitarios para almacenar el fichero en \code{/uploads}.
+    \item El servlet invoca al DAO responsable (por ejemplo, \code{SolicitudDAO} o métodos en \code{StudentDAO}) para insertar el registro en la BD y obtener el \code{solicitudId}.
+    \item El servlet redirige al detalle de la solicitud o al listado del estudiante (\code{/student/request-detail?id=<solicitudId>} o \code{/student/requests}).
+    \item La vista JSP correspondiente lee atributos de request/session y muestra la información actualizada.
+\end{enumerate}
+
+\subsection{Interacción Admin-Student (respuesta a solicitud)}
+
+\begin{enumerate}
+    \item El administrador abre el listado en \code{/admin/requests} y selecciona una solicitud.
+    \item \code{AdminRequestDetailServlet} carga la solicitud y su historial (vía \code{SolicitudMensajeDAO}) y presenta la vista de detalle.
+    \item El administrador edita el estado o escribe una respuesta; al enviar, el servlet guarda la respuesta en \code{solicitud\_mensaje} y actualiza el estado en \code{solicitud}.
+    \item Si hay adjuntos en la respuesta, el servlet valida la extensión y tamaño, y los guarda en \code{/uploads/messages}.
+    \item Opcionalmente, el código puede notificar por correo al estudiante (la implementación por defecto imprime en consola).
+\end{enumerate}
+
+\subsection{Filtros y seguridad}
+
+El proyecto usa filtros HTTP en \code{src/java/filter/} para:
+\begin{itemize}
+    \item Verificar sesión y permisos antes de acceder a rutas protegidas.
+    \item Prevenir CSRF básico (si aplica) y sanitizar entradas comunes.
+\end{itemize}
+
+\subsection{Manejo de archivos y restricciones}
+
+\begin{itemize}
+    \item Los servlets con \code{@MultipartConfig} definen \code{maxFileSize} y \code{maxRequestSize} (ver implementaciones: \code{NewRequestServlet}, \code{EditRequestServlet}, \code{RequestDetailServlet}, \code{AdminRequestDetailServlet}).
+    \item Los controladores validan el tipo MIME y la extensión (p. ej., PDF para estudiantes, PDF/DOCX/JPG/PNG para admin).
+\end{itemize}
+
+\subsection{Buena práctica para contribuciones}
+
+\begin{itemize}
+    \item Añadir tests unitarios para lógica en utilidades y DAOs si se extrapola a JUnit.
+    \item Mantener consultas SQL en el DAO y evitar lógica de negocio en JSP.
+    \item Documentar cualquier cambio en \code{sql/database.sql} y actualizar el diagrama ER.
+\end{itemize}
+
+% =================================================
+\section{Resumen de Interacciones entre Componentes}
+% =================================================
+
+\begin{longtable}{|p{0.28\textwidth}|p{0.65\textwidth}|}
+\hline
+Componente & Resumen de interacción \\
+\hline
+Servlets (controladores) & Reciben la petición HTTP, validan, llaman a DAOs/utiles y despachan a JSP. \\
+\hline
+DAOs & Ejecutan consultas SQL, mapean ResultSet a objetos de modelo y devuelven DTOs a servlets. \\
+\hline
+Models & Objetos-PONOs que transportan datos entre DAO y vista/servlet. \\
+\hline
+JSPs (vistas) & Muestran datos y formularios; deben evitar lógica de negocio compleja. \\
+\hline
+Filters & Interceptan peticiones para seguridad, logging y control de acceso. \\
+\hline
+Uploads folder & Ubicación física relativa dentro de la aplicación donde se guardan adjuntos; los servlets devuelven rutas relativas para su descarga. \\
+\hline
+\end{longtable}
+
+\vspace{0.5cm}
+\subsection*{Lecturas recomendadas para desarrolladores}
+\addcontentsline{toc}{subsection}{Lecturas recomendadas}
+\begin{itemize}
+    \item Java Servlet Specification (documentación oficial).
+    \item JDBC and Connection Pooling best practices.
+    \item OWASP guidelines para manejo de archivos y control de accesos.
+\end{itemize}
+
+\end{document}

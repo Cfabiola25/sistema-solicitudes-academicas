@@ -1,0 +1,823 @@
+\documentclass[12pt,letterpaper]{article}
+
+% -------------------------------------------------
+% Formato general tipo APA 7.ª edición
+% -------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[spanish,es-tabla]{babel}
+\usepackage[T1]{fontenc}
+
+% Configuración para usar Helvetica (clon directo de Arial) en TODO el documento
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{indentfirst}
+\usepackage[table]{xcolor}
+\usepackage{hyperref}
+\usepackage{xurl}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{needspace}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{ragged2e}
+\usepackage{seqsplit}
+\usepackage{float}
+\usepackage{etoolbox}
+\usepackage{tocloft}
+
+\advance\cftfignumwidth 1em
+\shorthandoff{"}
+
+\addto\captionsspanish{
+  \renewcommand{\listtablename}{Índice de Entidades}
+  \renewcommand{\tablename}{Entidad}
+}
+
+% -------------------------------------------------
+% Estilo de tablas / entidades
+% -------------------------------------------------
+\definecolor{tableStripe}{HTML}{F2F4F7}
+\renewcommand{\arraystretch}{1.20}
+\setlength{\arrayrulewidth}{0.8pt}
+\setlength{\tabcolsep}{6pt}
+
+\captionsetup[table]{font={small,sf},labelfont=bf,position=above}
+\captionsetup[figure]{font={small,sf},labelfont=bf,position=above}
+
+\AtBeginEnvironment{longtable}{%
+  \rowcolors{2}{tableStripe}{white}%
+}
+
+\BeforeBeginEnvironment{longtable}{\begingroup\singlespacing\normalsize}
+\AfterEndEnvironment{longtable}{\endgroup}
+
+\providecommand{\toprule}{}
+\providecommand{\midrule}{}
+\providecommand{\bottomrule}{}
+\renewcommand{\toprule}{\hline}
+\renewcommand{\midrule}{\hline}
+\renewcommand{\bottomrule}{\hline}
+
+% Márgenes APA
+\geometry{margin=1in}
+\setlength{\headheight}{15pt}
+
+% Interlineado
+\doublespacing
+
+% Sangría
+\setlength{\parindent}{0.5in}
+\setlength{\parskip}{0pt}
+
+% Alineación APA
+\raggedright
+
+% Encabezado y numeración
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+
+% Colores y enlaces
+\definecolor{apaBlue}{HTML}{1F4E79}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    urlcolor=apaBlue,
+    citecolor=black,
+    pdftitle={Diccionario de Datos: Sistema de Solicitudes Académicas FESC},
+    pdfauthor={Laura Valentina Rozzo Espinel y otros}
+}
+
+% Títulos (Todos en tamaño 12pt / \normalsize)
+\titleformat{\section}
+  {\normalfont\bfseries\normalsize}
+  {\thesection.}{0.5em}{}
+
+\titleformat{\subsection}
+  {\normalfont\bfseries\normalsize}
+  {\thesubsection}{0.5em}{}
+
+\titleformat{\subsubsection}
+  {\normalfont\bfseries\itshape\normalsize}
+  {\thesubsubsection}{0.5em}{}
+
+\titlespacing*{\section}{0pt}{1.5em}{1em}
+\titlespacing*{\subsection}{0pt}{1.2em}{0.8em}
+\titlespacing*{\subsubsection}{0pt}{1em}{0.6em}
+
+% Cada capítulo inicia en hoja nueva
+\pretocmd{\section}{\clearpage}{}{}
+
+% Código SQL (SIN CUADROS, SIN FONDO, FUENTE ARIAL/HELVETICA TAMAÑO 12)
+\lstdefinelanguage{sql}{
+    keywords={SELECT,FROM,WHERE,AND,OR,TRUE,FALSE,NULL,CREATE,TABLE,FUNCTION,RETURNS,TRIGGER,LANGUAGE,STABLE,INSERT,UPDATE,DELETE,PRIMARY,KEY,FOREIGN,REFERENCES,CHECK,UNIQUE,DEFAULT},
+    sensitive=false,
+    comment=[l]{--},
+    morestring=[b]'
+}
+
+\lstdefinestyle{codeblock}{
+    backgroundcolor=\color{white},
+    frame=none,
+    basicstyle=\normalfont\normalsize,
+    breaklines=true,
+    breakatwhitespace=false,
+    columns=fullflexible,
+    keepspaces=true,
+    showstringspaces=false,
+    tabsize=2
+}
+\lstset{style=codeblock}
+
+\newcolumntype{L}[1]{>{\RaggedRight\arraybackslash}p{#1}}
+\newcommand{\code}[1]{\texorpdfstring{\begingroup\normalfont\normalsize\def\_{\textunderscore\allowbreak}#1\endgroup}{#1}}
+\newcommand{\dash}{---}
+
+\makeatletter
+\newcommand{\diagramfigure}[4]{%
+\begin{figure}[H]
+\centering
+\caption{#2}
+\label{#4}
+\vspace{0.3cm}
+
+\IfFileExists{#1}{%
+  \includegraphics[width=0.9\textwidth,height=0.42\textheight,keepaspectratio]{#1}%
+}{%
+    \fbox{%
+    \begin{minipage}[c][2.2in][c]{0.88\textwidth}
+        \centering
+        \textbf{Espacio reservado para imagen}\\[0.5em]
+        Ubique la imagen correspondiente en la ruta:\\
+        \texttt{#1}
+    \end{minipage}%
+    }%
+}
+
+\vspace{0.3cm}
+{\small \textit{Descripción de la figura: #3}}
+\end{figure}
+}
+\makeatother
+
+\begin{document}
+
+% ==================================================================
+% PORTADA
+% ==================================================================
+\begin{titlepage}
+    \centering
+    \vspace*{0.5in}
+
+    % 1. Nombres completos de los estudiantes
+    {\normalsize\bfseries
+    Laura Valentina Rozzo Espinel\\
+    Nelly Fabiola Cano Oviedo\\
+    Nestor Ivan Granados Valenzuela\\
+    Nick Alejandro Ortega Mendez\\
+    Santiago Alejandro Medina Ortega\\
+    Valery Gabriela Alarcon Peña
+    \par}
+    \vspace{0.6in}
+
+    % 2. Programa académico
+    {\normalsize Ingeniería de Software \par}
+    \vspace{0.4in}
+
+    % 3. Nombre completo de la FESC
+    {\normalsize Fundación de Estudios Superiores Comfanorte (FESC) \par}
+    \vspace{0.6in}
+
+    % 4. Nombre de la asignatura
+    {\normalsize\bfseries Programación Orientada a Objetos \par}
+    \vspace{0.4in}
+
+    % 5. Identificación del Proyecto (PPA) y Título del Documento
+    {\normalsize Proyecto Pedagógico de Aula (PPA) \par}
+    \vspace{0.5in}
+    {\normalsize\bfseries DICCIONARIO DE DATOS:\\ SISTEMA DE SOLICITUDES ACADÉMICAS FESC\par}
+    \vspace{0.6in}
+
+    % 6. Nombre del docente
+    {\normalsize Ing. Angel Ureña \par}
+
+    \vfill
+    {\normalsize San José de Cúcuta, Mayo de 2026 \par}
+\end{titlepage}
+
+\newpage
+\tableofcontents
+
+\newpage
+\addcontentsline{toc}{section}{Índice de Entidades}
+\listoftables
+
+\newpage
+\addcontentsline{toc}{section}{Índice de Figuras}
+\listoffigures
+
+% ==================================================================
+\section*{Introducción}
+\addcontentsline{toc}{section}{Introducción}
+% ==================================================================
+
+El diccionario de datos del \textbf{Sistema de Solicitudes Académicas FESC} documenta la estructura relacional de la base de datos utilizada por la plataforma. El proyecto se apoya en un esquema MySQL orientado a la gestión de sedes, jornadas, programas académicos, estudiantes, administradores y solicitudes académicas, con seguimiento de mensajes y auditorías de retraso.
+
+El diseño está optimizado para asegurar la integridad referencial entre tablas maestras, usuarios y registros de solicitudes, así como para soportar consultas frecuentes sobre estudiantes, tipos de solicitud y estado de trámites. A continuación se presenta un resumen general de los componentes estructurales principales del modelo de datos.
+
+\begin{longtable}{|L{0.42\textwidth}|L{0.48\textwidth}|}
+\caption{Resumen general de componentes de la base de datos}\\
+\toprule
+\textbf{Elemento de la Base de Datos} & \textbf{Cantidad Global / Detalles} \\
+\midrule
+Entidades físicas & 10 \\
+\hline
+Funciones SQL / PLpgSQL & 0 \\
+\hline
+Triggers automáticos & 0 \\
+\hline
+Índices B-Tree optimizados & 9 \\
+\hline
+Políticas de (Row Level Security) & 0 \\
+\hline
+Extensiones de motor activas & 1: \code{InnoDB} (MySQL 8.x) \\
+\hline
+\end{longtable}
+
+% ==================================================================
+\section{Modelo Relacional e Integridad de Datos}
+% ==================================================================
+
+Esta sección describe las relaciones principales entre las entidades del sistema. El modelo relacional define cómo se vinculan las sedes, jornadas y programas con los estudiantes, y cómo las solicitudes académicas se enlazan con estudiantes, tipos de solicitud y administradores responsables.
+
+La arquitectura relacional asegura que los registros de solicitudes dependan de estudiantes válidos, que los administradores puedan ser asignados como responsables o aprobadores, y que los mensajes y auditorías mantengan consistencia con la solicitud original.
+
+\begin{longtable}{|L{0.20\textwidth}|L{0.20\textwidth}|L{0.15\textwidth}|L{0.35\textwidth}|}
+\caption{Matriz relacional de entidades del sistema}\\
+\toprule
+\textbf{Entidad origen} & \textbf{Entidad destino} & \textbf{Cardinalidad} & \textbf{FK / Comportamiento de integridad} \\
+\midrule
+\code{programa\_academico} & \code{estudiante} & 1:N & \code{programa\_academico.id} $\rightarrow$ \code{estudiante.programa\_id}; ON UPDATE CASCADE, ON DELETE RESTRICT. \\
+\hline
+\code{sede} & \code{estudiante} & 1:N & \code{sede.id} $\rightarrow$ \code{estudiante.sede\_id}; ON UPDATE CASCADE, ON DELETE RESTRICT. \\
+\hline
+\code{jornada} & \code{estudiante} & 1:N & \code{jornada.id} $\rightarrow$ \code{estudiante.jornada\_id}; ON UPDATE CASCADE, ON DELETE RESTRICT. \\
+\hline
+\code{estudiante} & \code{solicitud} & 1:N & \code{estudiante.id} $\rightarrow$ \code{solicitud.estudiante\_id}; ON UPDATE CASCADE, ON DELETE RESTRICT. \\
+\hline
+\code{solicitud} & \code{solicitud\_mensaje} & 1:N & \code{solicitud.id} $\rightarrow$ \code{solicitud\_mensaje.solicitud\_id}; ON UPDATE CASCADE, ON DELETE CASCADE. \\
+\hline
+\code{solicitud} & \code{auditoria\_retraso} & 1:N & \code{solicitud.id} $\rightarrow$ \code{auditoria\_retraso.solicitud\_id}; ON UPDATE CASCADE, ON DELETE CASCADE. \\
+\hline
+\code{tipo\_solicitud} & \code{tipo\_solicitud\_responsable} & 1:N & \code{tipo\_solicitud.id} $\rightarrow$ \code{tipo\_solicitud\_responsable.tipo\_solicitud\_id}; ON UPDATE CASCADE, ON DELETE CASCADE. \\
+\hline
+\code{administrador} & \code{tipo\_solicitud\_responsable} & 1:N & \code{administrador.id} $\rightarrow$ \code{tipo\_solicitud\_responsable.admin\_id}; ON UPDATE CASCADE, ON DELETE CASCADE. \\
+\hline
+\code{administrador} & \code{auditoria\_retraso} & 1:N & \code{administrador.id} $\rightarrow$ \code{auditoria\_retraso.admin\_id}; ON UPDATE CASCADE, ON DELETE RESTRICT. \\
+\hline
+\code{tipo\_solicitud} & \code{solicitud} & 1:N & \code{tipo\_solicitud.id} $\rightarrow$ \code{solicitud.tipo\_solicitud\_id}; ON UPDATE CASCADE, ON DELETE RESTRICT. \\
+\hline
+\code{administrador} & \code{solicitud} & 1:N & \code{administrador.id} $\rightarrow$ \code{solicitud.admin\_id}; ON UPDATE CASCADE, ON DELETE SET NULL. \\
+\hline
+\code{administrador} & \code{solicitud} & 1:N & \code{administrador.id} $\rightarrow$ \code{solicitud.responsable\_id}; ON UPDATE CASCADE, ON DELETE SET NULL. \\
+\hline
+\end{longtable}
+
+\diagramfigure
+{diagramas/modelo-entidad-relacion.png}
+{Modelo Entidad-Relación físico de la base de datos}
+{Estructura relacional del sistema académico, incluyendo tablas maestras, relaciones de integridad referencial y dependencias de solicitudes.}
+{fig:mer}
+
+\diagramfigure
+{diagramas/diagrama_clases.png}
+{Diagrama de clases del dominio académico}
+{Representación orientada a objetos de las entidades escolares y de gestión de solicitudes utilizadas por la aplicación Java.}
+{fig:clases-uml}
+
+\diagramfigure
+{diagramas/diagrama_despliegue.png}
+{Diagrama de despliegue del sistema académico}
+{Topología de despliegue del sistema, mostrando el servidor de aplicaciones Java, la base de datos MySQL y el acceso de usuario vía navegador web.}
+{fig:despliegue-datos}
+
+% ==================================================================
+\section{Descripción de Entidades}
+% ==================================================================
+
+En esta sección se describen las entidades que conforman el esquema de la base de datos. Cada tabla incluye campos, tipos, propiedades de nulidad, valores por defecto y una descripción funcional.
+
+\subsection{\texorpdfstring{\code{sede}: Sedes}{\code{sede}: Sedes}}
+
+Esta entidad almacena las sedes físicas donde se atiende al estudiante. Funciona como tabla maestra de ubicación administrativa dentro del sistema.
+
+\begin{longtable}{|L{0.15\textwidth}|L{0.16\textwidth}|L{0.08\textwidth}|L{0.18\textwidth}|L{0.33\textwidth}|}
+\caption{Diccionario de datos de la entidad sede}\\
+\toprule
+\textbf{Campo} & \textbf{Tipo} & \textbf{Nulo} & \textbf{Default} & \textbf{Descripción} \\
+\midrule
+\code{id} & \code{INT UNSIGNED} & NO & \dash & Identificador único de la sede y llave primaria. \\
+\hline
+\code{nombre} & \code{VARCHAR(50)} & NO & \dash & Nombre de la sede o campus. \\
+\hline
+\end{longtable}
+
+\subsubsection*{Restricciones de la entidad \code{sede}}
+
+\begin{longtable}{|L{0.30\textwidth}|L{0.20\textwidth}|L{0.40\textwidth}|}
+\caption{Restricciones de la entidad sede}\\
+\toprule
+\textbf{Nombre de restricción} & \textbf{Tipo} & \textbf{Detalle técnico} \\
+\midrule
+\code{sede\_pkey} & PRIMARY KEY & Columna asignada: \code{id}. \\
+\hline
+\code{uk\_sede\_nombre} & UNIQUE & Columna asignada: \code{nombre}. \\
+\end{longtable}
+
+\subsection{\texorpdfstring{\code{jornada}: Jornadas}{\code{jornada}: Jornadas}}
+
+Esta entidad describe los turnos académicos posibles para los estudiantes. Permite clasificar la modalidad de estudio.
+
+\begin{longtable}{|L{0.15\textwidth}|L{0.16\textwidth}|L{0.08\textwidth}|L{0.18\textwidth}|L{0.33\textwidth}|}
+\caption{Diccionario de datos de la entidad jornada}\\
+\toprule
+\textbf{Campo} & \textbf{Tipo} & \textbf{Nulo} & \textbf{Default} & \textbf{Descripción} \\
+\midrule
+\code{id} & \code{INT UNSIGNED} & NO & \dash & Identificador único de la jornada y llave primaria. \\
+\hline
+\code{nombre} & \code{VARCHAR(50)} & NO & \dash & Nombre de la jornada académica. \\
+\hline
+\end{longtable}
+
+\subsubsection*{Restricciones de la entidad \code{jornada}}
+
+\begin{longtable}{|L{0.30\textwidth}|L{0.20\textwidth}|L{0.40\textwidth}|}
+\caption{Restricciones de la entidad jornada}\\
+\toprule
+\textbf{Nombre de restricción} & \textbf{Tipo} & \textbf{Detalle técnico} \\
+\midrule
+\code{jornada\_pkey} & PRIMARY KEY & Columna asignada: \code{id}. \\
+\hline
+\code{uk\_jornada\_nombre} & UNIQUE & Columna asignada: \code{nombre}. \\
+\end{longtable}
+
+\subsection{\texorpdfstring{\code{programa_academico}: Programas académicos}{\code{programa\_academico}: Programas académicos}}
+
+Esta entidad lista los programas académicos disponibles en el sistema. Se utiliza para relacionar estudiantes con su formación.
+
+\begin{longtable}{|L{0.15\textwidth}|L{0.16\textwidth}|L{0.08\textwidth}|L{0.18\textwidth}|L{0.33\textwidth}|}
+\caption{Diccionario de datos de la entidad programa\_academico}\\
+\toprule
+\textbf{Campo} & \textbf{Tipo} & \textbf{Nulo} & \textbf{Default} & \textbf{Descripción} \\
+\midrule
+\code{id} & \code{INT UNSIGNED} & NO & \dash & Identificador único del programa y llave primaria. \\
+\hline
+\code{codigo} & \code{VARCHAR(20)} & NO & \dash & Código interno del programa académico. \\
+\hline
+\code{nombre} & \code{VARCHAR(200)} & NO & \dash & Nombre completo del programa académico. \\
+\hline
+\end{longtable}
+
+\subsubsection*{Restricciones de la entidad \code{programa\_academico}}
+
+\begin{longtable}{|L{0.30\textwidth}|L{0.20\textwidth}|L{0.40\textwidth}|}
+\caption{Restricciones de la entidad programa\_academico}\\
+\toprule
+\textbf{Nombre de restricción} & \textbf{Tipo} & \textbf{Detalle técnico} \\
+\midrule
+\code{programa\_academico\_pkey} & PRIMARY KEY & Columna asignada: \code{id}. \\
+\hline
+\code{uk\_programa\_codigo} & UNIQUE & Columna asignada: \code{codigo}. \\
+\hline
+\code{uk\_programa\_nombre} & UNIQUE & Columna asignada: \code{nombre}. \\
+\end{longtable}
+
+\subsection{\texorpdfstring{\code{tipo_solicitud}: Tipos de solicitud}{\code{tipo\_solicitud}: Tipos de solicitud}}
+
+Esta entidad define las categorías de solicitudes académicas, con tiempos de respuesta y modalidad de cálculo.
+
+\begin{longtable}{|L{0.15\textwidth}|L{0.16\textwidth}|L{0.08\textwidth}|L{0.18\textwidth}|L{0.33\textwidth}|}
+\caption{Diccionario de datos de la entidad tipo\_solicitud}\\
+\toprule
+\textbf{Campo} & \textbf{Tipo} & \textbf{Nulo} & \textbf{Default} & \textbf{Descripción} \\
+\midrule
+\code{id} & \code{INT UNSIGNED} & NO & \dash & Identificador único del tipo de solicitud y llave primaria. \\
+\hline
+\code{nombre} & \code{VARCHAR(100)} & NO & \dash & Nombre descriptivo del tipo de solicitud. \\
+\hline
+\code{tiempo\_respuesta\_dias} & \code{INT UNSIGNED} & NO & \code{5} & Días de respuesta estimados para el trámite. \\
+\hline
+\code{tipo\_tiempo} & \code{ENUM('habiles', 'calendario')} & NO & \code{'habiles'} & Método de cálculo del tiempo de respuesta. \\
+\hline
+\code{activo} & \code{TINYINT(1)} & NO & \code{1} & Indica si el tipo de solicitud está disponible. \\
+\hline
+\end{longtable}
+
+\subsubsection*{Restricciones de la entidad \code{tipo\_solicitud}}
+
+\begin{longtable}{|L{0.30\textwidth}|L{0.20\textwidth}|L{0.40\textwidth}|}
+\caption{Restricciones de la entidad tipo\_solicitud}\\
+\toprule
+\textbf{Nombre de restricción} & \textbf{Tipo} & \textbf{Detalle técnico} \\
+\midrule
+\code{tipo\_solicitud\_pkey} & PRIMARY KEY & Columna asignada: \code{id}. \\
+\hline
+\code{uk\_tipo\_solicitud\_nombre} & UNIQUE & Columna asignada: \code{nombre}. \\
+\hline
+\code{chk\_tipo\_solicitud\_tiempo} & CHECK & Validación: \code{tiempo\_respuesta\_dias > 0}. \\
+\end{longtable}
+
+\subsection{\texorpdfstring{\code{estudiante}: Estudiantes}{\code{estudiante}: Estudiantes}}
+
+Esta entidad contiene los datos personales y académicos de los estudiantes que generan solicitudes. Incluye autenticación básica, datos de programa y seguimiento de términos aceptados.
+
+\begin{longtable}{|L{0.15\textwidth}|L{0.15\textwidth}|L{0.08\textwidth}|L{0.18\textwidth}|L{0.38\textwidth}|}
+\caption{Diccionario de datos de la entidad estudiante}\\
+\toprule
+\textbf{Campo} & \textbf{Tipo} & \textbf{Nulo} & \textbf{Default} & \textbf{Descripción} \\
+\midrule
+\code{id} & \code{INT UNSIGNED} & NO & \dash & Identificador único del estudiante y llave primaria. \\
+\hline
+\code{nombre} & \code{VARCHAR(100)} & NO & \dash & Primer nombre del estudiante. \\
+\hline
+\code{apellido} & \code{VARCHAR(100)} & NO & \dash & Apellido del estudiante. \\
+\hline
+\code{email} & \code{VARCHAR(120)} & NO & \dash & Correo electrónico único del estudiante. \\
+\hline
+\code{password} & \code{VARCHAR(255)} & NO & \dash & Hash de la contraseña para autenticación. \\
+\hline
+\code{programa\_id} & \code{INT UNSIGNED} & NO & \dash & Llave foránea hacia \code{programa\_academico.id}. \\
+\hline
+\code{sede\_id} & \code{INT UNSIGNED} & NO & \dash & Llave foránea hacia \code{sede.id}. \\
+\hline
+\code{jornada\_id} & \code{INT UNSIGNED} & NO & \dash & Llave foránea hacia \code{jornada.id}. \\
+\hline
+\code{terminos\_aceptados} & \code{TINYINT(1)} & NO & \code{0} & Indica si el estudiante aceptó términos y condiciones. \\
+\hline
+\code{recuperacion\_token} & \code{VARCHAR(150)} & SÍ & \code{NULL} & Token para recuperación de contraseña. \\
+\hline
+\code{token\_expiracion} & \code{DATETIME} & SÍ & \code{NULL} & Fecha de expiración del token de recuperación. \\
+\hline
+\code{fecha\_creacion} & \code{DATETIME} & NO & \code{CURRENT\_TIMESTAMP} & Fecha de creación del registro. \\
+\hline
+\code{fecha\_actualizacion} & \code{DATETIME} & NO & \code{CURRENT\_TIMESTAMP ON UPDATE CURRENT\_TIMESTAMP} & Fecha de última actualización del registro. \\
+\end{longtable}
+
+\subsubsection*{Restricciones de la entidad \code{estudiante}}
+
+\begin{longtable}{|L{0.30\textwidth}|L{0.20\textwidth}|L{0.40\textwidth}|}
+\caption{Restricciones de la entidad estudiante}\\
+\toprule
+\textbf{Nombre de restricción} & \textbf{Tipo} & \textbf{Detalle técnico} \\
+\midrule
+\code{estudiante\_pkey} & PRIMARY KEY & Columna asignada: \code{id}. \\
+\hline
+\code{uk\_estudiante\_email} & UNIQUE & Columna asignada: \code{email}. \\
+\hline
+\code{fk\_estudiante\_programa} & FOREIGN KEY & \code{programa\_id} $\rightarrow$ \code{programa\_academico.id}. \\
+\hline
+\code{fk\_estudiante\_sede} & FOREIGN KEY & \code{sede\_id} $\rightarrow$ \code{sede.id}. \\
+\hline
+\code{fk\_estudiante\_jornada} & FOREIGN KEY & \code{jornada\_id} $\rightarrow$ \code{jornada.id}. \\
+\hline
+\code{chk\_estudiante\_terminos} & CHECK & Validación: \code{terminos\_aceptados IN (0, 1)}. \\
+\end{longtable}
+
+\subsection{\texorpdfstring{\code{administrador}: Administradores}{\code{administrador}: Administradores}}
+
+Esta entidad almacena a los usuarios administrativos del sistema, sus credenciales y su rol operativo.
+
+\begin{longtable}{|L{0.15\textwidth}|L{0.15\textwidth}|L{0.08\textwidth}|L{0.18\textwidth}|L{0.38\textwidth}|}
+\caption{Diccionario de datos de la entidad administrador}\\
+\toprule
+\textbf{Campo} & \textbf{Tipo} & \textbf{Nulo} & \textbf{Default} & \textbf{Descripción} \\
+\midrule
+\code{id} & \code{INT UNSIGNED} & NO & \dash & Identificador único del administrador y llave primaria. \\
+\hline
+\code{nombre} & \code{VARCHAR(100)} & NO & \dash & Nombre completo del administrador. \\
+\hline
+\code{email} & \code{VARCHAR(120)} & NO & \dash & Correo electrónico único del administrador. \\
+\hline
+\code{password} & \code{VARCHAR(255)} & NO & \dash & Hash de la contraseña del administrador. \\
+\hline
+\code{rol} & \code{ENUM('SuperAdmin', 'Admin', 'Secretaria')} & NO & \code{'Admin'} & Rol asignado al administrador. \\
+\hline
+\code{recuperacion\_token} & \code{VARCHAR(150)} & SÍ & \code{NULL} & Token para recuperar contraseña. \\
+\hline
+\code{token\_expiracion} & \code{DATETIME} & SÍ & \code{NULL} & Fecha de expiración del token de recuperación. \\
+\hline
+\code{activo} & \code{TINYINT(1)} & NO & \code{1} & Indica si la cuenta está activa. \\
+\hline
+\code{fecha\_creacion} & \code{DATETIME} & NO & \code{CURRENT\_TIMESTAMP} & Fecha de creación del registro. \\
+\hline
+\code{fecha\_actualizacion} & \code{DATETIME} & NO & \code{CURRENT\_TIMESTAMP ON UPDATE CURRENT\_TIMESTAMP} & Fecha de última actualización del registro. \\
+\end{longtable}
+
+\subsubsection*{Restricciones de la entidad \code{administrador}}
+
+\begin{longtable}{|L{0.30\textwidth}|L{0.20\textwidth}|L{0.40\textwidth}|}
+\caption{Restricciones de la entidad administrador}\\
+\toprule
+\textbf{Nombre de restricción} & \textbf{Tipo} & \textbf{Detalle técnico} \\
+\midrule
+\code{administrador\_pkey} & PRIMARY KEY & Columna asignada: \code{id}. \\
+\hline
+\code{uk\_administrador\_email} & UNIQUE & Columna asignada: \code{email}. \\
+\hline
+\code{chk\_administrador\_activo} & CHECK & Validación: \code{activo IN (0, 1)}. \\
+\end{longtable}
+
+\subsection{\texorpdfstring{\code{tipo_solicitud_responsable}: Responsable de tipo de solicitud}{\code{tipo\_solicitud\_responsable}: Responsable de tipo de solicitud}}
+
+Esta tabla relaciona tipos de solicitud con administradores responsables asignados para su gestión.
+
+\begin{longtable}{|L{0.15\textwidth}|L{0.18\textwidth}|L{0.12\textwidth}|L{0.18\textwidth}|L{0.33\textwidth}|}
+\caption{Diccionario de datos de la entidad tipo\_solicitud\_responsable}\\
+\toprule
+\textbf{Campo} & \textbf{Tipo} & \textbf{Nulo} & \textbf{Default} & \textbf{Descripción} \\
+\midrule
+\code{tipo\_solicitud\_id} & \code{INT UNSIGNED} & NO & \dash & Llave foránea hacia \code{tipo\_solicitud.id}. \\
+\hline
+\code{admin\_id} & \code{INT UNSIGNED} & NO & \dash & Llave foránea hacia \code{administrador.id}. \\
+\hline
+\code{fecha\_asignacion} & \code{DATETIME} & NO & \code{CURRENT\_TIMESTAMP} & Fecha de asignación del responsable. \\
+\end{longtable}
+
+\subsubsection*{Restricciones de la entidad \code{tipo\_solicitud\_responsable}}
+
+\begin{longtable}{|L{0.30\textwidth}|L{0.20\textwidth}|L{0.40\textwidth}|}
+\caption{Restricciones de la entidad tipo\_solicitud\_responsable}\\
+\toprule
+\textbf{Nombre de restricción} & \textbf{Tipo} & \textbf{Detalle técnico} \\
+\midrule
+\code{tipo\_solicitud\_responsable\_pkey} & PRIMARY KEY & Clave compuesta: \code{tipo\_solicitud\_id, admin\_id}. \\
+\hline
+\code{fk\_tipo\_responsable\_tipo} & FOREIGN KEY & \code{tipo\_solicitud\_id} $\rightarrow$ \code{tipo\_solicitud.id}. \\
+\hline
+\code{fk\_tipo\_responsable\_admin} & FOREIGN KEY & \code{admin\_id} $\rightarrow$ \code{administrador.id}. \\
+\end{longtable}
+
+\subsection{\texorpdfstring{\code{solicitud}: Solicitudes académicas}{\code{solicitud}: Solicitudes académicas}}
+
+Esta entidad representa las solicitudes que realizan los estudiantes, incluyendo su estado, documentos asociados y responsables administrativos.
+
+\begin{longtable}{|L{0.15\textwidth}|L{0.15\textwidth}|L{0.08\textwidth}|L{0.18\textwidth}|L{0.38\textwidth}|}
+\caption{Diccionario de datos de la entidad solicitud}\\
+\toprule
+\textbf{Campo} & \textbf{Tipo} & \textbf{Nulo} & \textbf{Default} & \textbf{Descripción} \\
+\midrule
+\code{id} & \code{INT UNSIGNED} & NO & \dash & Identificador único de la solicitud y llave primaria. \\
+\hline
+\code{estudiante\_id} & \code{INT UNSIGNED} & NO & \dash & Llave foránea hacia \code{estudiante.id}. \\
+\hline
+\code{tipo\_solicitud\_id} & \code{INT UNSIGNED} & NO & \dash & Llave foránea hacia \code{tipo\_solicitud.id}. \\
+\hline
+\code{descripcion} & \code{TEXT} & NO & \dash & Descripción detallada de la solicitud. \\
+\hline
+\code{fecha\_solicitud} & \code{DATETIME} & NO & \code{CURRENT\_TIMESTAMP} & Fecha de envío de la solicitud. \\
+\hline
+\code{estado} & \code{ENUM('Enviada', 'Pendiente', 'Aprobada', 'Rechazada', 'Anulada')} & NO & \code{'Enviada'} & Estado actual de la solicitud. \\
+\hline
+\code{documento} & \code{VARCHAR(255)} & SÍ & \code{NULL} & Nombre o ruta del documento adjunto. \\
+\hline
+\code{fecha\_limite} & \code{DATETIME} & SÍ & \code{NULL} & Fecha límite para la respuesta. \\
+\hline
+\code{fecha\_respuesta} & \code{DATETIME} & SÍ & \code{NULL} & Fecha en que se respondió la solicitud. \\
+\hline
+\code{comentario\_respuesta} & \code{TEXT} & SÍ & \code{NULL} & Comentario de la respuesta administrativa. \\
+\hline
+\code{admin\_id} & \code{INT UNSIGNED} & SÍ & \code{NULL} & Llave foránea del administrador que respondió. \\
+\hline
+\code{responsable\_id} & \code{INT UNSIGNED} & SÍ & \code{NULL} & Llave foránea del administrador responsable del trámite. \\
+\end{longtable}
+
+\subsubsection*{Restricciones de la entidad \code{solicitud}}
+
+\begin{longtable}{|L{0.30\textwidth}|L{0.20\textwidth}|L{0.40\textwidth}|}
+\caption{Restricciones de la entidad solicitud}\\
+\toprule
+\textbf{Nombre de restricción} & \textbf{Tipo} & \textbf{Detalle técnico} \\
+\midrule
+\code{solicitud\_pkey} & PRIMARY KEY & Columna asignada: \code{id}. \\
+\hline
+\code{fk\_solicitud\_estudiante} & FOREIGN KEY & \code{estudiante\_id} $\rightarrow$ \code{estudiante.id}. \\
+\hline
+\code{fk\_solicitud\_tipo} & FOREIGN KEY & \code{tipo\_solicitud\_id} $\rightarrow$ \code{tipo\_solicitud.id}. \\
+\hline
+\code{fk\_solicitud\_admin\_respuesta} & FOREIGN KEY & \code{admin\_id} $\rightarrow$ \code{administrador.id} ON DELETE SET NULL. \\
+\hline
+\code{fk\_solicitud\_responsable} & FOREIGN KEY & \code{responsable\_id} $\rightarrow$ \code{administrador.id} ON DELETE SET NULL. \\
+\end{longtable}
+
+\subsection{\texorpdfstring{\code{solicitud_mensaje}: Mensajes de solicitud}{\code{solicitud\_mensaje}: Mensajes de solicitud}}
+
+Esta entidad almacena el historial de mensajes relacionados con cada solicitud académica.
+
+\begin{longtable}{|L{0.15\textwidth}|L{0.16\textwidth}|L{0.08\textwidth}|L{0.18\textwidth}|L{0.33\textwidth}|}
+\caption{Diccionario de datos de la entidad solicitud\_mensaje}\\
+\toprule
+\textbf{Campo} & \textbf{Tipo} & \textbf{Nulo} & \textbf{Default} & \textbf{Descripción} \\
+\midrule
+\code{id} & \code{INT UNSIGNED} & NO & \dash & Identificador único del mensaje y llave primaria. \\
+\hline
+\code{solicitud\_id} & \code{INT UNSIGNED} & NO & \dash & Llave foránea hacia \code{solicitud.id}. \\
+\hline
+\code{autor\_rol} & \code{ENUM('student', 'admin')} & NO & \dash & Rol del autor del mensaje. \\
+\hline
+\code{autor\_nombre} & \code{VARCHAR(150)} & NO & \dash & Nombre del autor del mensaje. \\
+\hline
+\code{mensaje} & \code{TEXT} & NO & \dash & Contenido del mensaje. \\
+\hline
+\code{archivo} & \code{VARCHAR(255)} & SÍ & \code{NULL} & Ruta o nombre del archivo adjunto. \\
+\hline
+\code{fecha\_envio} & \code{DATETIME} & NO & \code{CURRENT\_TIMESTAMP} & Fecha de envío del mensaje. \\
+\end{longtable}
+
+\subsubsection*{Restricciones de la entidad \code{solicitud\_mensaje}}
+
+\begin{longtable}{|L{0.30\textwidth}|L{0.20\textwidth}|L{0.40\textwidth}|}
+\caption{Restricciones de la entidad solicitud\_mensaje}\\
+\toprule
+\textbf{Nombre de restricción} & \textbf{Tipo} & \textbf{Detalle técnico} \\
+\midrule
+\code{solicitud\_mensaje\_pkey} & PRIMARY KEY & Columna asignada: \code{id}. \\
+\hline
+\code{fk\_mensaje\_solicitud} & FOREIGN KEY & \code{solicitud\_id} $\rightarrow$ \code{solicitud.id}. \\
+\end{longtable}
+
+\subsection{\texorpdfstring{\code{auditoria_retraso}: Auditorías de retraso}{\code{auditoria\_retraso}: Auditorías de retraso}}
+
+Esta entidad registra los retrasos en la gestión de solicitudes, vinculados al administrador y a la solicitud original.
+
+\begin{longtable}{|L{0.15\textwidth}|L{0.16\textwidth}|L{0.08\textwidth}|L{0.18\textwidth}|L{0.33\textwidth}|}
+\caption{Diccionario de datos de la entidad auditoria\_retraso}\\
+\toprule
+\textbf{Campo} & \textbf{Tipo} & \textbf{Nulo} & \textbf{Default} & \textbf{Descripción} \\
+\midrule
+\code{id} & \code{INT UNSIGNED} & NO & \dash & Identificador único de la auditoría y llave primaria. \\
+\hline
+\code{solicitud\_id} & \code{INT UNSIGNED} & NO & \dash & Llave foránea hacia \code{solicitud.id}. \\
+\hline
+\code{admin\_id} & \code{INT UNSIGNED} & NO & \dash & Llave foránea hacia \code{administrador.id}. \\
+\hline
+\code{dias\_retraso} & \code{INT UNSIGNED} & NO & \dash & Número de días de retraso registrados. \\
+\hline
+\code{fecha\_auditoria} & \code{DATETIME} & NO & \code{CURRENT\_TIMESTAMP} & Fecha de registro de la auditoría. \\
+\end{longtable}
+
+\subsubsection*{Restricciones de la entidad \code{auditoria\_retraso}}
+
+\begin{longtable}{|L{0.30\textwidth}|L{0.20\textwidth}|L{0.40\textwidth}|}
+\caption{Restricciones de la entidad auditoria\_retraso}\\
+\toprule
+\textbf{Nombre de restricción} & \textbf{Tipo} & \textbf{Detalle técnico} \\
+\midrule
+\code{auditoria\_retraso\_pkey} & PRIMARY KEY & Columna asignada: \code{id}. \\
+\hline
+\code{fk\_auditoria\_solicitud} & FOREIGN KEY & \code{solicitud\_id} $\rightarrow$ \code{solicitud.id}. \\
+\hline
+\code{fk\_auditoria\_admin} & FOREIGN KEY & \code{admin\_id} $\rightarrow$ \code{administrador.id}. \\
+\end{longtable}
+
+% ==================================================================
+\section{Índices}
+% ==================================================================
+
+Esta sección describe los índices implementados en el motor relacional. Los índices mejoran el rendimiento de las consultas de unión y filtros frecuentes sobre estudiantes y solicitudes.
+
+\begin{longtable}{|L{0.26\textwidth}|L{0.16\textwidth}|L{0.20\textwidth}|L{0.28\textwidth}|}
+\caption{Índices implementados en la base de datos}\\
+\toprule
+\textbf{Nombre técnico del índice} & \textbf{Entidad base} & \textbf{Columna objetivo} & \textbf{Propósito} \\
+\midrule
+\code{idx\_estudiante\_programa} & \code{estudiante} & \code{programa\_id} & Optimiza consultas de estudiantes por programa académico. \\
+\hline
+\code{idx\_estudiante\_sede} & \code{estudiante} & \code{sede\_id} & Optimiza consultas de estudiantes por sede. \\
+\hline
+\code{idx\_estudiante\_jornada} & \code{estudiante} & \code{jornada\_id} & Optimiza consultas de estudiantes por jornada. \\
+\hline
+\code{idx\_solicitud\_estudiante} & \code{solicitud} & \code{estudiante\_id} & Optimiza búsquedas de solicitudes de un estudiante. \\
+\hline
+\code{idx\_solicitud\_tipo} & \code{solicitud} & \code{tipo\_solicitud\_id} & Optimiza filtros por tipo de solicitud. \\
+\hline
+\code{idx\_solicitud\_estado} & \code{solicitud} & \code{estado} & Optimiza consultas por estado de solicitud. \\
+\hline
+\code{idx\_solicitud\_fecha} & \code{solicitud} & \code{fecha\_solicitud} & Optimiza la ordenación y filtros por fecha de envío. \\
+\hline
+\code{idx\_solicitud\_responsable} & \code{solicitud} & \code{responsable\_id} & Optimiza consultas por administrador responsable. \\
+\hline
+\code{idx\_mensaje\_solicitud} & \code{solicitud\_mensaje} & \code{solicitud\_id} & Optimiza la recuperación de historial de mensajes. \\
+\hline
+\code{idx\_auditoria\_solicitud} & \code{auditoria\_retraso} & \code{solicitud\_id} & Optimiza consultas de auditoría por solicitud. \\
+\hline
+\end{longtable}
+
+% ==================================================================
+\section{Triggers}
+% ==================================================================
+
+Esta sección describe los disparadores automáticos del esquema de base de datos. En el script SQL inicial no se definieron triggers automáticos; la actualización de fechas se maneja mediante la definición de columnas \code{ON UPDATE CURRENT\_TIMESTAMP}.
+
+\begin{longtable}{|L{0.30\textwidth}|L{0.16\textwidth}|L{0.18\textwidth}|L{0.26\textwidth}|}
+\caption{Triggers implementados en las entidades}\\
+\toprule
+\textbf{Nombre del disparador} & \textbf{Entidad destino} & \textbf{Evento capturado} & \textbf{Procedimiento invocado} \\
+\midrule
+No aplica & Ninguna & Ninguno & El esquema SQL no define triggers automáticos adicionales. \\
+\end{longtable}
+
+% ==================================================================
+\section{Funciones Almacenadas}
+% ==================================================================
+
+El script inicial del proyecto no incluye funciones almacenadas definidas en MySQL. La lógica de actualización de fechas y el manejo de estados se soporta con atributos nativos de MySQL and con la lógica de la aplicación Java en el servidor.
+
+% ==================================================================
+\section{Políticas de Seguridad}
+% ==================================================================
+
+Esta sección refleja la ausencia de políticas de Row Level Security en la base de datos local. MySQL no utiliza el mismo mecanismo RLS de PostgreSQL, y el control de acceso se gestiona principalmente desde la aplicación Java y la configuración del servidor de base de datos.
+
+\begin{longtable}{|L{0.24\textwidth}|L{0.14\textwidth}|L{0.12\textwidth}|L{0.16\textwidth}|L{0.24\textwidth}|}
+\caption{Políticas de seguridad basadas en el control de acceso por fila}\\
+\toprule
+\textbf{Nombre de la política} & \textbf{Entidad} & \textbf{Operación} & \textbf{Rol} & \textbf{Condición lógica} \\
+\midrule
+No aplica & N/A & N/A & N/A & La plataforma controla permisos y acceso en la capa de aplicación Java. \\
+\end{longtable}
+
+% ==================================================================
+\section{Extensiones PostgreSQL}
+% ==================================================================
+
+El proyecto se implementa sobre MySQL 8.x con motor InnoDB. No se emplean extensiones PostgreSQL en el esquema actual.
+
+\begin{longtable}{|L{0.22\textwidth}|L{0.18\textwidth}|L{0.50\textwidth}|}
+\caption{Extensiones activas de PostgreSQL}\\
+\toprule
+\textbf{Nombre de extensión} & \textbf{Esquema destino} & \textbf{Descripción} \\
+\midrule
+\code{InnoDB} & \code{mysql} & Motor de almacenamiento transaccional, con integridad referencial y soporte de índices. \\
+\end{longtable}
+
+% ==================================================================
+\section{Glosario}
+% ==================================================================
+
+Esta sección presenta los términos técnicos más importantes utilizados en el documento. Su propósito es facilitar la comprensión del comportamiento relacional y operacional del modelo de datos.
+
+\begin{longtable}{|L{0.22\textwidth}|L{0.68\textwidth}|}
+\caption{Glosario de términos técnicos}\\
+\toprule
+\textbf{Término técnico} & \textbf{Definición operacional en el sistema} \\
+\midrule
+\code{ENUM} & Tipo de dato que restringe el valor de un campo a un conjunto fijo de opciones. \\
+\hline
+\code{AUTO\_INCREMENT} & Mecanismo para generar valores secuenciales en claves primarias numéricas. \\
+\hline
+\code{FOREIGN KEY} & Llave foránea utilizada para asegurar integridad entre tablas relacionadas. \\
+\hline
+\code{CHECK} & Restricción que valida una condición sobre el valor de una columna. \\
+\hline
+\code{InnoDB} & Motor de almacenamiento de MySQL que soporta transacciones y claves foráneas. \\
+\hline
+\code{PRIMARY KEY} & Columna o conjunto de columnas que identifican un registro de forma única. \\
+\hline
+\code{VARCHAR} & Tipo de dato de texto variable con longitud máxima definida. \\
+\hline
+\code{DATETIME} & Tipo de dato que almacena fecha y hora en MySQL. \\
+\hline
+\code{TINYINT} & Tipo entero pequeño utilizado aquí para representar valores booleanos. \\
+\hline
+\code{JDBC} & Conector Java que permite la comunicación entre la aplicación y la base de datos MySQL. \\
+\end{longtable}
+
+% ==================================================================
+\section{Conclusiones}
+% ==================================================================
+
+El diccionario de datos del Sistema de Solicitudes Académicas FESC documenta la estructura de la base de datos con claridad. La arquitectura muestra un modelo relacional bien diferenciado entre tablas maestras, usuarios y solicitudes, lo cual facilita el mantenimiento y la evolución del sistema.
+
+El uso de MySQL con InnoDB y la separación de responsabilidades entre estudiantes, administradores y tipos de solicitud garantiza integridad referencial y permite escalabilidad en los procesos académicos. La documentación de índices y restricciones facilita la comprensión de los puntos clave para optimizar consultas y mantener coherencia de los datos.
+
+\newpage
+\section*{Bibliografía}
+\addcontentsline{toc}{section}{Bibliografía}
+
+MySQL. (s. f.). \textit{MySQL 8.0 Reference Manual}. Recuperado el 28 de mayo de 2026, de \url{https://dev.mysql.com/doc/}
+
+Oracle. (s. f.). \textit{JDBC Developer's Guide}. Recuperado el 28 de mayo de 2026, de \url{https://docs.oracle.com/javase/8/docs/technotes/guides/jdbc/}
+
+Eclipse Foundation. (s. f.). \textit{Java Servlet Specification}. Recuperado el 28 de mayo de 2026, de \url{https://jakarta.ee/specifications/servlet/}
+
+\end{document}

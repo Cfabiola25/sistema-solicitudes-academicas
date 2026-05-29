@@ -1,0 +1,116 @@
+@startuml
+' =====================================================================
+' DIAGRAMA DE DESPLIEGUE / FLUJO DE AUTENTICACIÓN
+' SISTEMA DE SOLICITUDES ACADÉMICAS
+' =====================================================================
+
+title Flujo de Inicio de Sesión y Validación de Sesión
+
+skinparam shadowing false
+skinparam linetype ortho
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam ArrowColor #2E4053
+
+skinparam actor {
+    BorderColor #1F618D
+    BackgroundColor #D6EAF8
+}
+
+skinparam node {
+    BorderColor #21618C
+    BackgroundColor #EBF5FB
+}
+
+skinparam database {
+    BorderColor #117A65
+    BackgroundColor #D5F5E3
+}
+
+left to right direction
+
+' =====================================================================
+' ACTOR
+' =====================================================================
+
+actor "Usuario" as User
+
+' =====================================================================
+' COMPONENTES DEL SISTEMA
+' =====================================================================
+
+node "Navegador Web\n(Cliente)" as Browser {
+
+    component "Formulario Login\nlogin.jsp" as LoginView
+
+}
+
+node "Servidor Apache Tomcat" as Server {
+
+    component "LoginServlet" as Login
+
+    component "Protected Servlets\n(Admin / Student)" as Protected
+
+    component "HTTP Session" as Session
+
+    component "AuthFilter" as Filter
+
+}
+
+database "MySQL Database" as DB
+
+' =====================================================================
+' FLUJO DE AUTENTICACIÓN
+' =====================================================================
+
+User --> LoginView : Ingresa credenciales
+
+LoginView --> Login : POST /login
+
+Login --> DB : Consultar usuario\ny contraseña
+
+DB --> Login : Resultado autenticación
+
+Login --> Session : Crear sesión HTTP
+
+Session --> Login : SessionID
+
+Login --> Protected : Redirección según rol
+
+Protected --> Filter : Verificar acceso
+
+Filter --> Session : Validar sesión activa
+
+Session --> Filter : Sesión válida
+
+Filter --> Protected : Permitir acceso
+
+Protected --> User : Mostrar dashboard
+
+' =====================================================================
+' NOTAS EXPLICATIVAS
+' =====================================================================
+
+note right of Login
+Responsabilidades:
+- Validar credenciales
+- Gestionar autenticación
+- Crear sesión del usuario
+- Redireccionar según rol
+end note
+
+note bottom of Session
+La sesión HTTP almacena:
+- ID del usuario
+- Rol
+- Estado autenticado
+end note
+
+note right of Filter
+Filtro de seguridad encargado de:
+- Proteger rutas privadas
+- Validar autenticación
+- Evitar acceso no autorizado
+end note
+
+@enduml

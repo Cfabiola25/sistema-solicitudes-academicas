@@ -1,0 +1,146 @@
+@startuml
+' =====================================================================
+' DIAGRAMA DE COMPONENTES - SISTEMA DE SOLICITUDES ACADÉMICAS
+' =====================================================================
+
+title Diagrama de Componentes - Sistema de Solicitudes Académicas
+
+skinparam shadowing false
+skinparam linetype ortho
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam ArrowColor #2E4053
+skinparam PackageBorderColor #1F618D
+skinparam PackageBackgroundColor #EBF5FB
+skinparam ComponentBorderColor #21618C
+skinparam ComponentBackgroundColor #FFFFFF
+
+left to right direction
+
+' =====================================================================
+' CAPA PRESENTACIÓN
+' =====================================================================
+
+package "Capa de Presentación" <<Rectangle>> {
+
+    package "web" {
+
+        component "JSPs\n(Vistas)" as jsp <<UI>>
+
+        component "Assets\nCSS • JS • Images" as assets <<UI>>
+
+    }
+
+}
+
+' =====================================================================
+' CAPA CONTROLADOR
+' =====================================================================
+
+package "Capa de Control" <<Rectangle>> {
+
+    package "src/java/controller" {
+
+        component "Servlets\nControllers" as controller <<Controller>>
+
+        component "Filters\nAuthFilter" as filter <<Security>>
+
+    }
+
+}
+
+' =====================================================================
+' CAPA LÓGICA / NEGOCIO
+' =====================================================================
+
+package "Capa de Negocio" <<Rectangle>> {
+
+    package "src/java/model" {
+
+        component "Entidades\nModels" as model <<Entity>>
+
+    }
+
+    package "src/java/util" {
+
+        component "Utilities\nDBConnection\nHelpers" as util <<Utility>>
+
+    }
+
+}
+
+' =====================================================================
+' CAPA PERSISTENCIA
+' =====================================================================
+
+package "Capa de Persistencia" <<Rectangle>> {
+
+    package "src/java/dao" {
+
+        component "DAOs\nAcceso a Datos" as dao <<Database>>
+
+    }
+
+}
+
+' =====================================================================
+' BASE DE DATOS
+' =====================================================================
+
+package "Base de Datos" <<Rectangle>> {
+
+    database "MySQL Database\n(database.sql)" as sql
+
+}
+
+' =====================================================================
+' RELACIONES
+' =====================================================================
+
+filter --> controller : Filtra\npeticiones
+
+controller --> jsp : Retorna\nvistas
+
+jsp --> assets : Usa recursos\nestáticos
+
+controller --> model : Manipula\nentidades
+
+controller --> util : Utiliza\nutilidades
+
+controller --> dao : Solicita\npersistencia
+
+dao --> model : Mapea\nobjetos
+
+dao --> util : Conexión\nBD
+
+dao --> sql : CRUD\nSQL
+
+util --> sql : Conexión JDBC
+
+' =====================================================================
+' NOTAS
+' =====================================================================
+
+note right of controller
+Controladores Servlet encargados de:
+- Recibir peticiones HTTP
+- Validar sesiones
+- Procesar formularios
+- Coordinar flujo MVC
+end note
+
+note bottom of dao
+Patrón DAO implementado para:
+- Separar lógica SQL
+- Facilitar mantenimiento
+- Centralizar consultas
+end note
+
+note right of jsp
+Interfaz gráfica desarrollada
+con JSP + JSTL + Bootstrap
+end note
+
+@enduml

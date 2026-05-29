@@ -1,0 +1,225 @@
+@startuml
+' =====================================================================
+' MODELO ENTIDAD - RELACIÓN
+' SISTEMA DE SOLICITUDES ACADÉMICAS
+' =====================================================================
+
+title Modelo Entidad-Relación - Sistema de Solicitudes Académicas
+
+hide circle
+
+skinparam shadowing false
+skinparam linetype ortho
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam defaultTextAlignment center
+skinparam entity {
+    BorderColor #21618C
+    BackgroundColor #EBF5FB
+    FontColor #1B2631
+}
+skinparam ArrowColor #2E4053
+
+left to right direction
+
+' =====================================================================
+' CATÁLOGOS PRINCIPALES
+' =====================================================================
+
+package "Catálogos Académicos" {
+
+    entity "sede" as sede {
+        * id : INT UNSIGNED <<PK>>
+        --
+        nombre : VARCHAR(50) <<UNIQUE>>
+    }
+
+    entity "jornada" as jornada {
+        * id : INT UNSIGNED <<PK>>
+        --
+        nombre : VARCHAR(50) <<UNIQUE>>
+    }
+
+    entity "programa_academico" as programa_academico {
+        * id : INT UNSIGNED <<PK>>
+        --
+        codigo : VARCHAR(20) <<UNIQUE>>
+        nombre : VARCHAR(200)
+    }
+
+}
+
+package "Catálogo de Solicitudes" {
+
+    entity "tipo_solicitud" as tipo_solicitud {
+        * id : INT UNSIGNED <<PK>>
+        --
+        nombre : VARCHAR(100)
+        tiempo_respuesta_dias : INT UNSIGNED
+        tipo_tiempo : ENUM('habiles','calendario')
+        activo : TINYINT(1)
+    }
+
+}
+
+' =====================================================================
+' USUARIOS DEL SISTEMA
+' =====================================================================
+
+package "Usuarios del Sistema" {
+
+    entity "estudiante" as estudiante {
+        * id : INT UNSIGNED <<PK>>
+        --
+        nombre : VARCHAR(100)
+        apellido : VARCHAR(100)
+        email : VARCHAR(120) <<UNIQUE>>
+        password : VARCHAR(255)
+        --
+        programa_id : INT UNSIGNED <<FK>>
+        sede_id : INT UNSIGNED <<FK>>
+        jornada_id : INT UNSIGNED <<FK>>
+        --
+        terminos_aceptados : TINYINT(1)
+        recuperacion_token : VARCHAR(150)
+        token_expiracion : DATETIME
+        fecha_creacion : DATETIME
+        fecha_actualizacion : DATETIME
+    }
+
+    entity "administrador" as administrador {
+        * id : INT UNSIGNED <<PK>>
+        --
+        nombre : VARCHAR(100)
+        email : VARCHAR(120) <<UNIQUE>>
+        password : VARCHAR(255)
+        rol : ENUM('SuperAdmin','Admin','Secretaria')
+        --
+        recuperacion_token : VARCHAR(150)
+        token_expiracion : DATETIME
+        activo : TINYINT(1)
+        fecha_creacion : DATETIME
+        fecha_actualizacion : DATETIME
+    }
+
+}
+
+' =====================================================================
+' ASIGNACIÓN DE RESPONSABLES
+' =====================================================================
+
+package "Asignación de Responsables" {
+
+    entity "tipo_solicitud_responsable" as tipo_solicitud_responsable {
+        * tipo_solicitud_id : INT UNSIGNED <<PK, FK>>
+        * admin_id : INT UNSIGNED <<PK, FK>>
+        --
+        fecha_asignacion : DATETIME
+    }
+
+}
+
+' =====================================================================
+' GESTIÓN DE SOLICITUDES
+' =====================================================================
+
+package "Gestión de Solicitudes" {
+
+    entity "solicitud" as solicitud {
+        * id : INT UNSIGNED <<PK>>
+        --
+        estudiante_id : INT UNSIGNED <<FK>>
+        tipo_solicitud_id : INT UNSIGNED <<FK>>
+        admin_id : INT UNSIGNED <<FK>>
+        responsable_id : INT UNSIGNED <<FK>>
+        --
+        descripcion : TEXT
+        fecha_solicitud : DATETIME
+        estado : ENUM('Enviada','Pendiente','Aprobada','Rechazada','Anulada')
+        documento : VARCHAR(255)
+        fecha_limite : DATETIME
+        fecha_respuesta : DATETIME
+        comentario_respuesta : TEXT
+    }
+
+    entity "solicitud_mensaje" as solicitud_mensaje {
+        * id : INT UNSIGNED <<PK>>
+        --
+        solicitud_id : INT UNSIGNED <<FK>>
+        autor_rol : ENUM('student','admin')
+        autor_nombre : VARCHAR(150)
+        mensaje : TEXT
+        archivo : VARCHAR(255)
+        fecha_envio : DATETIME
+    }
+
+    entity "auditoria_retraso" as auditoria_retraso {
+        * id : INT UNSIGNED <<PK>>
+        --
+        solicitud_id : INT UNSIGNED <<FK>>
+        admin_id : INT UNSIGNED <<FK>>
+        dias_retraso : INT UNSIGNED
+        fecha_auditoria : DATETIME
+    }
+
+}
+
+' =====================================================================
+' RELACIONES ACADÉMICAS
+' =====================================================================
+
+programa_academico ||--o{ estudiante : "tiene"
+sede ||--o{ estudiante : "pertenece"
+jornada ||--o{ estudiante : "asigna"
+
+' =====================================================================
+' RELACIONES DE USUARIOS Y SOLICITUDES
+' =====================================================================
+
+estudiante ||--o{ solicitud : "crea"
+tipo_solicitud ||--o{ solicitud : "clasifica"
+
+administrador ||--o{ solicitud : "gestiona\nadmin_id"
+administrador ||--o{ solicitud : "responsable\nresponsable_id"
+
+' =====================================================================
+' RELACIONES DE RESPONSABLES
+' =====================================================================
+
+tipo_solicitud ||--o{ tipo_solicitud_responsable : "define"
+administrador ||--o{ tipo_solicitud_responsable : "atiende"
+
+' =====================================================================
+' RELACIONES DE SEGUIMIENTO
+' =====================================================================
+
+solicitud ||--o{ solicitud_mensaje : "contiene"
+solicitud ||--o{ auditoria_retraso : "genera"
+administrador ||--o{ auditoria_retraso : "registra"
+
+' =====================================================================
+' NOTAS EXPLICATIVAS
+' =====================================================================
+
+note right of solicitud
+Estados posibles:
+- Enviada
+- Pendiente
+- Aprobada
+- Rechazada
+- Anulada
+end note
+
+note bottom of tipo_solicitud_responsable
+Tabla intermedia para asignar
+uno o varios administradores
+a cada tipo de solicitud.
+end note
+
+note bottom of auditoria_retraso
+Registra retrasos asociados
+a solicitudes que superan
+su fecha límite de respuesta.
+end note
+
+@enduml

@@ -1,0 +1,32 @@
+@startuml
+title Diagrama de Despliegue - Sistema de Solicitudes Académicas
+
+skinparam shadowing false
+skinparam linetype ortho
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+
+actor "Usuario\nNavegador Web" as User
+
+node "Servidor de Aplicaciones\nApache Tomcat 9" as Tomcat {
+    component "AuthFilter" as Filter
+    component "Servlets\nControladores MVC" as Servlets
+    component "JSP\nVistas" as JSP
+    component "DAO\nAcceso a Datos" as DAO
+    component "DBConnection\nJDBC" as JDBCUtil
+}
+
+database "MySQL\nfesc_solicitudes" as MySQL
+
+User --> Filter : HTTP/HTTPS
+Filter --> Servlets : valida sesión
+Servlets --> JSP : renderiza vista
+Servlets --> DAO : solicita datos
+DAO --> JDBCUtil : obtiene conexión
+JDBCUtil --> MySQL : SQL/JDBC
+MySQL --> JDBCUtil : resultados
+JDBCUtil --> DAO : datos
+DAO --> Servlets : respuesta
+Servlets --> User : HTML
+
+@enduml
