@@ -306,7 +306,10 @@
 
 <script>
     const d = new Date();
-    document.getElementById('todayDate').textContent = d.toLocaleDateString('es-CO', { day: '2-digit', month: 'long', year: 'numeric' });
+    const todayDateEl = document.getElementById('todayDate');
+    if (todayDateEl) {
+        todayDateEl.textContent = d.toLocaleDateString('es-CO', { day: '2-digit', month: 'long', year: 'numeric' });
+    }
 
     const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
     const createdData = [
