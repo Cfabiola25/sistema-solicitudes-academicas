@@ -91,13 +91,30 @@
     </header>
 
     <div class="p-8 flex-1 space-y-6">
-        <div class="flex items-start justify-between gap-4">
+        <div class="flex flex-col md:flex-row items-start justify-between gap-4">
             <div>
                 <p class="text-xs font-bold uppercase tracking-[0.3em] text-gray-400">Panel administrativo</p>
                 <h1 class="text-3xl font-extrabold text-gray-900 mt-2">Reportes y métricas</h1>
                 <p class="text-sm text-gray-500 mt-2 max-w-2xl">Un tablero de análisis con tendencia, distribución por estado, tipos más usados y seguimiento de casos críticos.</p>
+                <a href="<%=request.getContextPath()%>/admin/requests" class="inline-block text-sm font-bold text-[#c8102e] hover:underline mt-2">Ir al listado</a>
             </div>
-            <a href="<%=request.getContextPath()%>/admin/requests" class="text-sm font-bold text-[#c8102e] hover:underline self-start mt-2">Ir al listado</a>
+            
+            <form action="<%=request.getContextPath()%>/admin/reports" method="GET" class="flex items-center gap-2 text-sm text-gray-500 bg-white border border-gray-100 rounded-xl px-4 py-2 shadow-sm">
+                <i class="fa-regular fa-calendar text-[#c8102e]"></i>
+                <div class="flex items-center gap-2">
+                    <input type="date" name="startDate" value="<%= request.getAttribute("startDate") != null ? request.getAttribute("startDate") : "" %>" class="bg-transparent border-none text-xs focus:ring-0 cursor-pointer text-gray-600 outline-none" title="Fecha inicio">
+                    <span class="text-gray-300">-</span>
+                    <input type="date" name="endDate" value="<%= request.getAttribute("endDate") != null ? request.getAttribute("endDate") : "" %>" class="bg-transparent border-none text-xs focus:ring-0 cursor-pointer text-gray-600 outline-none" title="Fecha fin">
+                    <button type="submit" class="ml-2 w-7 h-7 rounded-lg bg-[#c8102e] text-white flex items-center justify-center hover:bg-red-800 transition-colors" title="Filtrar">
+                        <i class="fa-solid fa-filter text-xs"></i>
+                    </button>
+                    <% if(request.getAttribute("startDate") != null && !request.getAttribute("startDate").toString().isEmpty() || request.getAttribute("endDate") != null && !request.getAttribute("endDate").toString().isEmpty()) { %>
+                    <a href="<%=request.getContextPath()%>/admin/reports" class="ml-1 w-7 h-7 rounded-lg bg-gray-100 text-gray-500 flex items-center justify-center hover:bg-gray-200 transition-colors" title="Limpiar filtro">
+                        <i class="fa-solid fa-xmark text-xs"></i>
+                    </a>
+                    <% } %>
+                </div>
+            </form>
         </div>
 
         <div class="grid grid-cols-2 xl:grid-cols-8 gap-4">

@@ -29,30 +29,35 @@ public class AdminReportsServlet extends HttpServlet {
             return;
         }
 
-        Map<String, Integer> counts = adminDAO.getCountsByStatus();
-        Map<Integer, Integer> monthlyCreated = adminDAO.getMonthlyRequestCounts();
-        Map<Integer, Integer> monthly = adminDAO.getMonthlyApprovedCounts();
+        String startDate = request.getParameter("startDate");
+        String endDate = request.getParameter("endDate");
+
+        Map<String, Integer> counts = adminDAO.getCountsByStatus(startDate, endDate);
+        Map<Integer, Integer> monthlyCreated = adminDAO.getMonthlyRequestCounts(startDate, endDate);
+        Map<Integer, Integer> monthly = adminDAO.getMonthlyApprovedCounts(startDate, endDate);
 
         int total = calculateTotal(counts);
-        int open = adminDAO.getOpenRequestsCount();
-        int closed = adminDAO.getClosedRequestsCount();
-        int createdThisMonth = adminDAO.getRequestsCreatedThisMonthCount();
+        int open = adminDAO.getOpenRequestsCount(startDate, endDate);
+        int closed = adminDAO.getClosedRequestsCount(startDate, endDate);
+        int createdThisMonth = adminDAO.getRequestsCreatedThisMonthCount(startDate, endDate);
         int sent = counts.getOrDefault("Enviada", 0);
         int pending = counts.getOrDefault("Pendiente", 0);
         int approved = counts.getOrDefault("Aprobada", 0);
         int rejected = counts.getOrDefault("Rechazada", 0);
-        int expired = adminDAO.getExpiredRequestsCount();
-        int aboutToExpire = adminDAO.getAboutToExpireRequestsCount();
+        int expired = adminDAO.getExpiredRequestsCount(startDate, endDate);
+        int aboutToExpire = adminDAO.getAboutToExpireRequestsCount(startDate, endDate);
 
         double approvalRate = total > 0 ? (approved * 100.0 / total) : 0.0;
-        double averageResolutionDays = adminDAO.getAverageResolutionDays();
+        double averageResolutionDays = adminDAO.getAverageResolutionDays(startDate, endDate);
 
         List<Solicitud> recent = adminDAO.getAllRequestsPaged("", 1, 8);
         List<Solicitud> closedRecent = adminDAO.getAllRequestsPaged("Cerrada", 1, 8);
         List<Solicitud> urgent = adminDAO.getAllRequestsPaged("Vencidas", 1, 6);
-        List<Object[]> topTypes = adminDAO.getTopRequestTypes(7);
-        List<Object[]> topPrograms = adminDAO.getTopPrograms(7);
+        List<Object[]> topTypes = adminDAO.getTopRequestTypes(7, startDate, endDate);
+        List<Object[]> topPrograms = adminDAO.getTopPrograms(7, startDate, endDate);
 
+        request.setAttribute("startDate", startDate);
+        request.setAttribute("endDate", endDate);
         request.setAttribute("counts", counts);
         request.setAttribute("monthlyCreated", monthlyCreated);
         request.setAttribute("monthly", monthly);

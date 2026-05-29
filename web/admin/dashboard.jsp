@@ -91,16 +91,29 @@
     </header>
 
     <div class="p-8 flex-1 space-y-6">
-        <div class="flex items-start justify-between gap-4">
+        <div class="flex flex-col md:flex-row items-start justify-between gap-4">
             <div>
                 <p class="text-xs font-bold uppercase tracking-[0.3em] text-gray-400">Administración</p>
                 <h1 class="text-3xl font-extrabold text-gray-900 mt-2">Dashboard de Gestión</h1>
                 <p class="text-sm text-gray-500 mt-2 max-w-2xl">Resumen operacional de solicitudes, vencimientos y distribución por tipo para tomar decisiones más rápido.</p>
             </div>
-            <div class="flex items-center gap-2 text-sm text-gray-500 bg-white border border-gray-100 rounded-xl px-4 py-2 shadow-sm">
+            
+            <form action="<%=request.getContextPath()%>/admin/dashboard" method="GET" class="flex items-center gap-2 text-sm text-gray-500 bg-white border border-gray-100 rounded-xl px-4 py-2 shadow-sm">
                 <i class="fa-regular fa-calendar text-[#c8102e]"></i>
-                <span id="todayDate"></span>
-            </div>
+                <div class="flex items-center gap-2">
+                    <input type="date" name="startDate" value="<%= request.getAttribute("startDate") != null ? request.getAttribute("startDate") : "" %>" class="bg-transparent border-none text-xs focus:ring-0 cursor-pointer text-gray-600 outline-none" title="Fecha inicio">
+                    <span class="text-gray-300">-</span>
+                    <input type="date" name="endDate" value="<%= request.getAttribute("endDate") != null ? request.getAttribute("endDate") : "" %>" class="bg-transparent border-none text-xs focus:ring-0 cursor-pointer text-gray-600 outline-none" title="Fecha fin">
+                    <button type="submit" class="ml-2 w-7 h-7 rounded-lg bg-[#c8102e] text-white flex items-center justify-center hover:bg-red-800 transition-colors" title="Filtrar">
+                        <i class="fa-solid fa-filter text-xs"></i>
+                    </button>
+                    <% if(request.getAttribute("startDate") != null && !request.getAttribute("startDate").toString().isEmpty() || request.getAttribute("endDate") != null && !request.getAttribute("endDate").toString().isEmpty()) { %>
+                    <a href="<%=request.getContextPath()%>/admin/dashboard" class="ml-1 w-7 h-7 rounded-lg bg-gray-100 text-gray-500 flex items-center justify-center hover:bg-gray-200 transition-colors" title="Limpiar filtro">
+                        <i class="fa-solid fa-xmark text-xs"></i>
+                    </a>
+                    <% } %>
+                </div>
+            </form>
         </div>
 
         <div class="grid grid-cols-2 xl:grid-cols-6 gap-4">
@@ -293,7 +306,10 @@
 
 <script>
     const d = new Date();
-    document.getElementById('todayDate').textContent = d.toLocaleDateString('es-CO', { day: '2-digit', month: 'long', year: 'numeric' });
+    const todayDateEl = document.getElementById('todayDate');
+    if (todayDateEl) {
+        todayDateEl.textContent = d.toLocaleDateString('es-CO', { day: '2-digit', month: 'long', year: 'numeric' });
+    }
 
     const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
     const createdData = [
