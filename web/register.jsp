@@ -145,10 +145,20 @@
                 <i class="fa-solid fa-shield-halved mr-2"></i> Política de Privacidad
             </h3>
             <div class="text-xs text-gray-500 space-y-3 leading-relaxed">
-                <p>En cumplimiento con las normas de protección de datos personales, le informamos que al registrarse en esta plataforma, usted autoriza el tratamiento de sus datos de identificación y académicos.</p>
-                <p><strong>Uso de la Información:</strong> Los datos personales recopilados se utilizarán exclusivamente para tramitar y responder a las solicitudes académicas realizadas ante la FESC.</p>
-                <p><strong>Seguridad de Credenciales:</strong> Sus contraseñas de acceso son resguardadas utilizando tecnologías criptográficas modernas (SHA-256 combinada con sal dinámica) para evitar accesos no autorizados.</p>
-                <p><strong>Derechos del Titular:</strong> Como titular de los datos, tiene derecho a conocer, actualizar y rectificar su información personal en cualquier momento a través de los canales institucionales oficiales.</p>
+                <p>En cumplimiento con lo establecido en la Ley 1581 de 2012 sobre Protección de Datos Personales y su decreto reglamentario 1377 de 2013 la FESC informa que, garantiza la protección plena del derecho de Habeas Data a estudiantes, empleados, proveedores, usuarios y grupos de interés. Todos los datos suministrados voluntaria y libremente se encuentran incorporados en nuestras bases de datos y tienen por finalidad ser recolectados, almacenados, usados y tratados por la FESC para el correcto y natural ejercicio de sus actividades de formación, administrativas, financieras, comercial, así como el envío de boletines informativos físicos y electrónicos e información publicitaria, permitiendo a las dependencias (académicas y administrativas) recolectar, recaudar, almacenar, usar, circular, suprimir, procesar, compilar, intercambiar, dar tratamiento, actualizar, y disponer de los datos que han sido suministrados y que se han incorporado en distintas bases o bancos de datos, o en repositorios electrónicos de todo tipo con que cuenta la Institución.</p>
+
+                <p>Se recuerda a los usuarios que podrán ejercer los derechos en conocer, actualizar, rectificar y suprimir sus datos personales que se encuentran en nuestros archivos, en cualquier momento y sin ningún costo, previa acreditación de su identidad. Para lo anterior pueden contactarse por escrito a la dirección Av. 4 #15-14 barrio La Playa en Cúcuta, o en la sede Ocaña en la dirección KDX 194-785 barrio Llano de los Alcaldes, vía universitaria; a través de correo electrónico <a href="mailto:habeasdata@fesc.edu.co" class="text-[#c8102e] hover:underline">habeasdata@fesc.edu.co</a>, o al teléfono (037) 582 9292 Ext: 118.</p>
+
+                <p>Para conocer más sobre nuestra Política de Tratamiento y Protección de Datos puede consultar el documento oficial en: <a href="http://www.fesc.edu.co/portal/archivos/reglamentos/politica_proteccion_datos.pdf" target="_blank" class="text-[#c8102e] hover:underline">http://www.fesc.edu.co/portal/archivos/reglamentos/politica_proteccion_datos.pdf</a></p>
+
+                <p><strong>Por lo tanto, de forma LIBRE, PREVIA, EXPRESA, VOLUNTARIA e INFORMADA Usted acepta y reconoce que:</strong></p>
+                <ol class="list-decimal pl-5 space-y-1">
+                    <li>Entregará información personal a la FESC.</li>
+                    <li>Esta información es y será utilizada en el desarrollo de las funciones propias de la Institución en su condición de institución de educación superior, de forma directa o a través de terceros.</li>
+                    <li>La FESC en los términos dispuestos por el Decreto 1377 (Art. 10) queda autorizada de manera expresa e inequívoca para mantener y manejar toda su información, a no ser que usted manifieste lo contrario de manera directa, expresa, inequívoca.</li>
+                </ol>
+
+                <p class="mt-2"><strong>En señal de aceptación consiento y autorizo que mis datos personales sean tratados conforme a lo previsto en la presente autorización.</strong></p>
             </div>
             <div class="mt-6 flex justify-end">
                 <button onclick="toggleModal(false)" 
