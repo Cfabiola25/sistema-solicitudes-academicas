@@ -66,10 +66,12 @@
                 <i class="fa-solid fa-user-graduate text-sm w-4 text-center <%= "students".equals(activePage) ? "" : "text-gray-400" %>"></i> Estudiantes
             </a>
 
+            <% if ("Superadmin".equalsIgnoreCase(adminRole)) { %>
             <a href="<%=request.getContextPath()%>/admin/admin-users"
                class="nav-link <%= "admin-users".equals(activePage) ? "active flex items-center gap-3 px-3 py-2.5 text-sm font-semibold text-white transition-all" : "flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-500 transition-all" %>">
                 <i class="fa-solid fa-users-gear text-sm w-4 text-center <%= "admin-users".equals(activePage) ? "" : "text-gray-400" %>"></i> Administradores
             </a>
+            <% } %>
 
             <a href="<%=request.getContextPath()%>/admin/programs"
                class="nav-link <%= "programs".equals(activePage) ? "active flex items-center gap-3 px-3 py-2.5 text-sm font-semibold text-white transition-all" : "flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-500 transition-all" %>">

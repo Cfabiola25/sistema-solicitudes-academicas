@@ -35,22 +35,29 @@ public class AdminDashboardServlet extends HttpServlet {
             return;
         }
 
-        Map<String, Integer> counts = adminDAO.getCountsByStatus();
-        Map<Integer, Integer> monthlyCreated = adminDAO.getMonthlyRequestCounts();
-        Map<Integer, Integer> monthly = adminDAO.getMonthlyApprovedCounts();
+        String startDate = request.getParameter("startDate");
+        String endDate = request.getParameter("endDate");
 
-        int total = adminDAO.getRequestsCount("");
-        int openCount = adminDAO.getOpenRequestsCount();
-        int closedCount = adminDAO.getClosedRequestsCount();
-        int createdThisMonth = adminDAO.getRequestsCreatedThisMonthCount();
-        double averageResolutionDays = adminDAO.getAverageResolutionDays();
-        int expiredCount = adminDAO.getExpiredRequestsCount();
-        int aboutToExpireCount = adminDAO.getAboutToExpireRequestsCount();
+        Map<String, Integer> counts = adminDAO.getCountsByStatus(startDate, endDate);
+        Map<Integer, Integer> monthlyCreated = adminDAO.getMonthlyRequestCounts(startDate, endDate);
+        Map<Integer, Integer> monthly = adminDAO.getMonthlyApprovedCounts(startDate, endDate);
+
+        // For total requests we could pass date filters too, but let's assume we modify getRequestsCount 
+        // to not take dates for now, or we can just calculate it from the counts map like in AdminReportsServlet.
+        int total = calculateTotal(counts);
+        int openCount = adminDAO.getOpenRequestsCount(startDate, endDate);
+        int closedCount = adminDAO.getClosedRequestsCount(startDate, endDate);
+        int createdThisMonth = adminDAO.getRequestsCreatedThisMonthCount(startDate, endDate);
+        double averageResolutionDays = adminDAO.getAverageResolutionDays(startDate, endDate);
+        int expiredCount = adminDAO.getExpiredRequestsCount(startDate, endDate);
+        int aboutToExpireCount = adminDAO.getAboutToExpireRequestsCount(startDate, endDate);
 
         List<Solicitud> pending = adminDAO.getAllRequestsPaged("Pendiente", 1, 5);
-        List<Object[]> topTypes = adminDAO.getTopRequestTypes(5);
-        List<Object[]> topPrograms = adminDAO.getTopPrograms(5);
+        List<Object[]> topTypes = adminDAO.getTopRequestTypes(5, startDate, endDate);
+        List<Object[]> topPrograms = adminDAO.getTopPrograms(5, startDate, endDate);
 
+        request.setAttribute("startDate", startDate);
+        request.setAttribute("endDate", endDate);
         request.setAttribute("counts", counts);
         request.setAttribute("monthlyCreated", monthlyCreated);
         request.setAttribute("monthly", monthly);
@@ -66,6 +73,18 @@ public class AdminDashboardServlet extends HttpServlet {
         request.setAttribute("aboutToExpireCount", aboutToExpireCount);
 
         request.getRequestDispatcher("/admin/dashboard.jsp").forward(request, response);
+    }
+
+    private int calculateTotal(Map<String, Integer> counts) {
+        int total = 0;
+        if (counts != null) {
+            for (Integer value : counts.values()) {
+                if (value != null) {
+                    total += value;
+                }
+            }
+        }
+        return total;
     }
 
     /**

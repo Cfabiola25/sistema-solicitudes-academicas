@@ -140,12 +140,12 @@ public class AdminDAO {
         return false;
     }
 
-    public Map<String, Integer> getCountsByStatus() {
+    public Map<String, Integer> getCountsByStatus(String startDate, String endDate) {
         Map<String, Integer> counts = new HashMap<>();
-        String sql = "SELECT estado, COUNT(*) AS total FROM solicitud GROUP BY estado";
+        String sql = "SELECT estado, COUNT(*) AS total FROM solicitud " + getDateFilter("WHERE", startDate, endDate, "fecha_solicitud") + " GROUP BY estado";
 
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
+             PreparedStatement ps = prepareStatementWithDates(conn, sql, startDate, endDate);
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
@@ -159,16 +159,16 @@ public class AdminDAO {
         return counts;
     }
 
-    public Map<Integer, Integer> getMonthlyApprovedCounts() {
+    public Map<Integer, Integer> getMonthlyApprovedCounts(String startDate, String endDate) {
         Map<Integer, Integer> counts = new HashMap<>();
 
         String sql = "SELECT MONTH(fecha_solicitud) AS mes, COUNT(*) AS total " +
                 "FROM solicitud " +
-                "WHERE estado = 'Aprobada' AND YEAR(fecha_solicitud) = YEAR(CURDATE()) " +
+                "WHERE estado = 'Aprobada' " + getDateFilter("AND", startDate, endDate, "fecha_solicitud") + " " +
                 "GROUP BY mes";
 
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
+             PreparedStatement ps = prepareStatementWithDates(conn, sql, startDate, endDate);
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
@@ -182,16 +182,16 @@ public class AdminDAO {
         return counts;
     }
 
-    public Map<Integer, Integer> getMonthlyRequestCounts() {
+    public Map<Integer, Integer> getMonthlyRequestCounts(String startDate, String endDate) {
         Map<Integer, Integer> counts = new HashMap<>();
 
         String sql = "SELECT MONTH(fecha_solicitud) AS mes, COUNT(*) AS total " +
                 "FROM solicitud " +
-                "WHERE YEAR(fecha_solicitud) = YEAR(CURDATE()) " +
+                "WHERE 1=1 " + getDateFilter("AND", startDate, endDate, "fecha_solicitud") + " " +
                 "GROUP BY mes";
 
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
+             PreparedStatement ps = prepareStatementWithDates(conn, sql, startDate, endDate);
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
@@ -205,20 +205,18 @@ public class AdminDAO {
         return counts;
     }
 
-    public List<Object[]> getTopRequestTypes(int limit) {
+    public List<Object[]> getTopRequestTypes(int limit, String startDate, String endDate) {
         List<Object[]> list = new ArrayList<>();
 
         String sql = "SELECT ts.nombre AS label, COUNT(*) AS total " +
                 "FROM solicitud s " +
-                "INNER JOIN tipo_solicitud ts ON s.tipo_solicitud_id = ts.id " +
+                "INNER JOIN tipo_solicitud ts ON s.tipo_solicitud_id = ts.id " + getDateFilter("WHERE", startDate, endDate, "s.fecha_solicitud") + " " +
                 "GROUP BY ts.id, ts.nombre " +
                 "ORDER BY total DESC, ts.nombre ASC " +
                 "LIMIT ?";
 
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setInt(1, Math.max(limit, 1));
+             PreparedStatement ps = prepareStatementWithDatesLimit(conn, sql, startDate, endDate, limit)) {
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -233,21 +231,19 @@ public class AdminDAO {
         return list;
     }
 
-    public List<Object[]> getTopPrograms(int limit) {
+    public List<Object[]> getTopPrograms(int limit, String startDate, String endDate) {
         List<Object[]> list = new ArrayList<>();
 
         String sql = "SELECT p.nombre AS label, COUNT(*) AS total " +
                 "FROM solicitud s " +
                 "INNER JOIN estudiante e ON s.estudiante_id = e.id " +
-                "INNER JOIN programa_academico p ON e.programa_id = p.id " +
+                "INNER JOIN programa_academico p ON e.programa_id = p.id " + getDateFilter("WHERE", startDate, endDate, "s.fecha_solicitud") + " " +
                 "GROUP BY p.id, p.nombre " +
                 "ORDER BY total DESC, p.nombre ASC " +
                 "LIMIT ?";
 
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setInt(1, Math.max(limit, 1));
+             PreparedStatement ps = prepareStatementWithDatesLimit(conn, sql, startDate, endDate, limit)) {
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -262,29 +258,30 @@ public class AdminDAO {
         return list;
     }
 
-    public int getOpenRequestsCount() {
-        String sql = "SELECT COUNT(*) FROM solicitud WHERE estado IN ('Enviada', 'Pendiente')";
-        return getSingleInt(sql);
+    public int getOpenRequestsCount(String startDate, String endDate) {
+        String sql = "SELECT COUNT(*) FROM solicitud WHERE estado IN ('Enviada', 'Pendiente')" + getDateFilter("AND", startDate, endDate, "fecha_solicitud");
+        return getSingleIntWithDates(sql, startDate, endDate);
     }
 
-    public int getClosedRequestsCount() {
-        String sql = "SELECT COUNT(*) FROM solicitud WHERE estado IN ('Aprobada', 'Rechazada', 'Anulada')";
-        return getSingleInt(sql);
+    public int getClosedRequestsCount(String startDate, String endDate) {
+        String sql = "SELECT COUNT(*) FROM solicitud WHERE estado IN ('Aprobada', 'Rechazada', 'Anulada')" + getDateFilter("AND", startDate, endDate, "fecha_solicitud");
+        return getSingleIntWithDates(sql, startDate, endDate);
     }
 
-    public int getRequestsCreatedThisMonthCount() {
-        String sql = "SELECT COUNT(*) FROM solicitud " +
-                "WHERE YEAR(fecha_solicitud) = YEAR(CURDATE()) " +
-                "AND MONTH(fecha_solicitud) = MONTH(CURDATE())";
-        return getSingleInt(sql);
+    public int getRequestsCreatedThisMonthCount(String startDate, String endDate) {
+        String sql = "SELECT COUNT(*) FROM solicitud WHERE 1=1 " + getDateFilter("AND", startDate, endDate, "fecha_solicitud");
+        if (startDate == null && endDate == null) {
+            sql += " AND YEAR(fecha_solicitud) = YEAR(CURDATE()) AND MONTH(fecha_solicitud) = MONTH(CURDATE())";
+        }
+        return getSingleIntWithDates(sql, startDate, endDate);
     }
 
-    public double getAverageResolutionDays() {
+    public double getAverageResolutionDays(String startDate, String endDate) {
         String sql = "SELECT AVG(TIMESTAMPDIFF(DAY, fecha_solicitud, fecha_respuesta)) " +
-                "FROM solicitud WHERE fecha_respuesta IS NOT NULL";
+                "FROM solicitud WHERE fecha_respuesta IS NOT NULL" + getDateFilter("AND", startDate, endDate, "fecha_solicitud");
 
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
+             PreparedStatement ps = prepareStatementWithDates(conn, sql, startDate, endDate);
              ResultSet rs = ps.executeQuery()) {
 
             if (rs.next()) {
@@ -789,20 +786,64 @@ public class AdminDAO {
         return false;
     }
 
-    public int getExpiredRequestsCount() {
-        String sql = "SELECT COUNT(*) FROM solicitud " +
-                "WHERE estado IN ('Enviada', 'Pendiente') AND fecha_limite < NOW()";
-
-        return getSingleInt(sql);
+    public int getExpiredRequestsCount(String startDate, String endDate) {
+        String sql = "SELECT COUNT(*) FROM solicitud WHERE estado IN ('Enviada', 'Pendiente') AND fecha_limite < NOW()" + getDateFilter("AND", startDate, endDate, "fecha_solicitud");
+        return getSingleIntWithDates(sql, startDate, endDate);
     }
 
-    public int getAboutToExpireRequestsCount() {
-        String sql = "SELECT COUNT(*) FROM solicitud " +
-                "WHERE estado IN ('Enviada', 'Pendiente') " +
-                "AND fecha_limite >= NOW() " +
-                "AND fecha_limite <= DATE_ADD(NOW(), INTERVAL 2 DAY)";
+    public int getAboutToExpireRequestsCount(String startDate, String endDate) {
+        String sql = "SELECT COUNT(*) FROM solicitud WHERE estado IN ('Enviada', 'Pendiente') AND fecha_limite >= NOW() AND fecha_limite <= DATE_ADD(NOW(), INTERVAL 2 DAY)" + getDateFilter("AND", startDate, endDate, "fecha_solicitud");
+        return getSingleIntWithDates(sql, startDate, endDate);
+    }
 
-        return getSingleInt(sql);
+    private int getSingleIntWithDates(String sql, String startDate, String endDate) {
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = prepareStatementWithDates(conn, sql, startDate, endDate);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    private String getDateFilter(String prefix, String startDate, String endDate, String field) {
+        StringBuilder sb = new StringBuilder();
+        if (startDate != null && !startDate.trim().isEmpty()) {
+            sb.append(" ").append(prefix).append(" DATE(").append(field).append(") >= ?");
+            prefix = "AND";
+        }
+        if (endDate != null && !endDate.trim().isEmpty()) {
+            sb.append(" ").append(prefix).append(" DATE(").append(field).append(") <= ?");
+        }
+        return sb.toString();
+    }
+
+    private PreparedStatement prepareStatementWithDates(Connection conn, String sql, String startDate, String endDate) throws SQLException {
+        PreparedStatement ps = conn.prepareStatement(sql);
+        int idx = 1;
+        if (startDate != null && !startDate.trim().isEmpty()) {
+            ps.setString(idx++, startDate);
+        }
+        if (endDate != null && !endDate.trim().isEmpty()) {
+            ps.setString(idx++, endDate);
+        }
+        return ps;
+    }
+
+    private PreparedStatement prepareStatementWithDatesLimit(Connection conn, String sql, String startDate, String endDate, int limit) throws SQLException {
+        PreparedStatement ps = conn.prepareStatement(sql);
+        int idx = 1;
+        if (startDate != null && !startDate.trim().isEmpty()) {
+            ps.setString(idx++, startDate);
+        }
+        if (endDate != null && !endDate.trim().isEmpty()) {
+            ps.setString(idx++, endDate);
+        }
+        ps.setInt(idx, Math.max(limit, 1));
+        return ps;
     }
 
     private int getSingleInt(String sql) {
