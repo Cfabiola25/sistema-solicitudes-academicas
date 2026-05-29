@@ -1,6 +1,4 @@
 dist/
-build/
-*.war
 *.class
 nbproject/private/
 .git
